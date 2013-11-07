@@ -27,18 +27,24 @@ var (
 )
 
 type Referrer struct {
-	url string
+	Url string
 }
 
 type SearchEngine struct {
 	Label  string
 	Domain string
 	Params []string
+	Query  string
 }
 
 type Social struct {
 	Label   string
 	Domains []string
+}
+
+type Direct struct {
+	Url    string
+	Domain string
 }
 
 func init() {
@@ -98,51 +104,82 @@ func readSocials(socialsPath string) ([]Social, error) {
 
 func NewReferrer(url string) *Referrer {
 	r := new(Referrer)
-	r.url = url
+	r.Url = url
 	return r
 }
 
-func (r *Referrer) ParseDirect(directDomains []string) error {
-	return nil
-}
-
-func (r *Referrer) ParseSocial() error {
-	return nil
-}
-
-func (r *Referrer) ParseSearchEngine() error {
-	return nil
-}
-
-func (r *Referrer) Parse(directDomains []string) error {
-	return nil
-}
-
-func analyzeReferrer(urlString string) (map[string]interface{}, error) {
-	data := map[string]interface{}{"referrer": urlString}
-	referrer, err := url.Parse(urlString)
+func parseUrl(u string) (*url.URL, error) {
+	refUrl, err := url.Parse(u)
 	if err != nil {
 		return nil, err
 	}
-	if !referrer.IsAbs() {
+	if !refUrl.IsAbs() {
 		return nil, errors.New("Referrer URL must be absolute")
 	}
-	host := strings.Split(referrer.Host, ".")
-	query := referrer.Query()
+	return refUrl, nil
+}
+
+func (r *Referrer) ParseDirect(directDomains []string) (*Direct, error) {
+	// refUrl, err := parseUrl(r.Url)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// TODO: ...
+	return nil, nil
+}
+
+func (r *Referrer) ParseSocial() (*Social, error) {
+	// refUrl, err := parseUrl(r.Url)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// TODO: ...
+	return nil, nil
+}
+
+func (r *Referrer) ParseSearchEngine() (*SearchEngine, error) {
+	refUrl, err := parseUrl(r.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	hostParts := strings.Split(refUrl.Host, ".")
+	query := refUrl.Query()
 	for _, engine := range SearchEngines {
-		for _, name := range host {
-			if name == engine.Domain {
+		for _, hostPart := range hostParts {
+			if hostPart == engine.Domain {
 				for _, param := range engine.Params {
 					if search, ok := query[param]; ok {
-						data["kind"] = "s"
-						data["engine"] = engine.Label
-						data["query"] = search[0]
-						return data, nil
+						e := new(SearchEngine)
+						e.Query = search[0]
+						e.Label = engine.Label
+						e.Domain = engine.Domain
+						e.Params = engine.Params
+						return e, nil
 					}
 				}
 			}
 		}
 	}
-	data["kind"] = "r"
-	return data, nil
+
+	return new(SearchEngine), nil
+}
+
+func (r *Referrer) Parse(directDomains []string) (*Direct, *Social, *SearchEngine, error) {
+	direct, err := r.ParseDirect(directDomains)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	social, err := r.ParseSocial()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	engine, err := r.ParseSearchEngine()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return direct, social, engine, nil
 }
