@@ -102,7 +102,7 @@ func readSocials(socialsPath string) ([]Social, error) {
 	return socials, nil
 }
 
-func NewReferrer(url string) *Referrer {
+func New(url string) *Referrer {
 	r := new(Referrer)
 	r.Url = url
 	return r
