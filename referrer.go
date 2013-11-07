@@ -120,11 +120,19 @@ func parseUrl(u string) (*url.URL, error) {
 }
 
 func (r *Referrer) ParseDirect(directDomains []string) (*Direct, error) {
-	// refUrl, err := parseUrl(r.Url)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// TODO: ...
+	refUrl, err := parseUrl(r.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, host := range directDomains {
+		if host == refUrl.Host {
+			d := new(Direct)
+			d.Url = r.Url
+			d.Domain = host
+			return d, nil
+		}
+	}
 	return nil, nil
 }
 
@@ -161,7 +169,6 @@ func (r *Referrer) ParseSearchEngine() (*SearchEngine, error) {
 			}
 		}
 	}
-
 	return nil, nil
 }
 
