@@ -137,11 +137,18 @@ func (r *Referrer) ParseDirect(directDomains []string) (*Direct, error) {
 }
 
 func (r *Referrer) ParseSocial() (*Social, error) {
-	// refUrl, err := parseUrl(r.Url)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// TODO: ...
+	refUrl, err := parseUrl(r.Url)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, social := range Socials {
+		for _, domain := range social.Domains {
+			if domain == refUrl.Host {
+				return &social, nil
+			}
+		}
+	}
 	return nil, nil
 }
 

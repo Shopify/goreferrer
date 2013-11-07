@@ -95,7 +95,7 @@ func TestSearchWithCyrillics(t *testing.T) {
 	assert.Equal(t, engine.Query, `ботинки packer-shoes`)
 }
 
-func TestReferrerDirect(t *testing.T) {
+func TestDirectSimple(t *testing.T) {
 	url := "http://example.com"
 
 	r := NewReferrer(url)
@@ -107,4 +107,17 @@ func TestReferrerDirect(t *testing.T) {
 	assert.NotNil(t, direct)
 	assert.Equal(t, direct.Url, url)
 	assert.Equal(t, direct.Domain, "example.com")
+}
+
+func TestSocialSimple(t *testing.T) {
+	url := "https://twitter.com/snormore/status/391149968360103936"
+
+	r := NewReferrer(url)
+	direct, social, engine, err := r.Parse(ExampleDirectDomains)
+	assert.NoError(t, err)
+	assert.Nil(t, direct)
+	assert.Nil(t, engine)
+
+	assert.NotNil(t, social)
+	assert.Equal(t, social.Label, "Twitter")
 }
