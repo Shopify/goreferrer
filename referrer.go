@@ -162,7 +162,7 @@ func (r *Referrer) ParseSearchEngine() (*SearchEngine, error) {
 		}
 	}
 
-	return new(SearchEngine), nil
+	return nil, nil
 }
 
 func (r *Referrer) Parse(directDomains []string) (*Direct, *Social, *SearchEngine, error) {
