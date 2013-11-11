@@ -10,19 +10,20 @@ var (
 	ExampleDirectDomains = []string{"example.com", "sample.com"}
 )
 
-func TestInvalidUrl(t *testing.T) {
+func TestRelativeUrl(t *testing.T) {
 	url := `buh`
 
 	r := New(url)
 	direct, social, engine, err := r.Parse(ExampleDirectDomains)
 
-	assert.Error(t, err)
+	assert.NoError(t, err)
 	assert.Nil(t, direct)
 	assert.Nil(t, social)
 	assert.Nil(t, engine)
+	assert.Equal(t, r.Url, url)
 }
 
-func TestNotSearchDirectOrSocial(t *testing.T) {
+func TestIndirectSimple(t *testing.T) {
 	url := "http://unicorns.ca/"
 
 	r := New(url)
@@ -32,6 +33,20 @@ func TestNotSearchDirectOrSocial(t *testing.T) {
 	assert.Nil(t, direct)
 	assert.Nil(t, social)
 	assert.Nil(t, engine)
+	assert.Equal(t, r.Url, url)
+}
+
+func TestNoHost(t *testing.T) {
+	url := "/example/path/to/something"
+
+	r := New(url)
+	direct, social, engine, err := r.Parse(ExampleDirectDomains)
+
+	assert.NoError(t, err)
+	assert.Nil(t, direct)
+	assert.Nil(t, social)
+	assert.Nil(t, engine)
+	assert.Equal(t, r.Url, url)
 }
 
 func TestSearchNonAscii(t *testing.T) {
