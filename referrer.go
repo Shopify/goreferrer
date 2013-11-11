@@ -10,6 +10,8 @@ import (
 	"sync"
 )
 
+type Kind int
+
 // engines.csv from https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingTraffic
 // Updated on 2013-11-06 (mk)
 // Format: label:domain:params
@@ -17,6 +19,11 @@ const (
 	DataDir         = "./data"
 	EnginesFilename = "engines.csv"
 	SocialsFilename = "socials.csv"
+
+	KindIndirect Kind = iota
+	KindDirect
+	KindSocial
+	KindSearchEngine
 )
 
 var (
@@ -25,25 +32,50 @@ var (
 	once          sync.Once
 )
 
-type Referrer struct {
+type Referrer interface {
+	Kind() Kind
+}
+
+type Indirect struct {
 	Url string
 }
 
+func (r Indirect) Kind() Kind {
+	return KindIndirect
+}
+
 type SearchEngine struct {
+	Indirect
+
 	Label  string
 	Domain string
 	Params []string
 	Query  string
 }
 
+func (r SearchEngine) Kind() Kind {
+	return KindSearchEngine
+}
+
 type Social struct {
+	Indirect
+
 	Label   string
 	Domains []string
 }
 
+func (r Social) Kind() Kind {
+	return KindSocial
+}
+
 type Direct struct {
-	Url    string
+	Indirect
+
 	Domain string
+}
+
+func (r Direct) Kind() Kind {
+	return KindDirect
 }
 
 func init() {
@@ -101,10 +133,43 @@ func readSocials(socialsPath string) ([]Social, error) {
 	return socials, nil
 }
 
-func New(url string) *Referrer {
-	r := new(Referrer)
-	r.Url = url
-	return r
+func ParseEx(url string, directDomains []string) (*Referrer, error) {
+	refUrl, err := parseUrl(url)
+	if err != nil {
+		return nil, err
+	}
+
+	if directDomains != nil {
+		direct, err := parseDirect(refUrl, directDomains)
+		if err != nil {
+			return nil, err
+		}
+		if direct != nil {
+			return &Referrer(*direct), nil
+		}
+	}
+
+	social, err := parseSocial(refUrl)
+	if err != nil {
+		return nil, err
+	}
+	if social != nil {
+		return &Referrer(*social), nil
+	}
+
+	engine, err := parseSearchEngine(refUrl)
+	if err != nil {
+		return nil, err
+	}
+	if engine != nil {
+		return &Referrer(*engine), nil
+	}
+
+	return &Referrer(Indirect{url}), nil
+}
+
+func Parse(url string) (*Referrer, error) {
+	return ParseEx(url, nil)
 }
 
 func parseUrl(u string) (*url.URL, error) {
@@ -115,12 +180,7 @@ func parseUrl(u string) (*url.URL, error) {
 	return refUrl, nil
 }
 
-func (r *Referrer) ParseDirect(directDomains []string) (*Direct, error) {
-	refUrl, err := parseUrl(r.Url)
-	if err != nil {
-		return nil, err
-	}
-
+func parseDirect(u *url.URL, directDomains []string) (*Direct, error) {
 	for _, host := range directDomains {
 		if host == refUrl.Host {
 			d := new(Direct)
@@ -132,12 +192,7 @@ func (r *Referrer) ParseDirect(directDomains []string) (*Direct, error) {
 	return nil, nil
 }
 
-func (r *Referrer) ParseSocial() (*Social, error) {
-	refUrl, err := parseUrl(r.Url)
-	if err != nil {
-		return nil, err
-	}
-
+func parseSocial(u *url.URL) (*Social, error) {
 	for _, social := range Socials {
 		for _, domain := range social.Domains {
 			if domain == refUrl.Host {
@@ -148,12 +203,7 @@ func (r *Referrer) ParseSocial() (*Social, error) {
 	return nil, nil
 }
 
-func (r *Referrer) ParseSearchEngine() (*SearchEngine, error) {
-	refUrl, err := parseUrl(r.Url)
-	if err != nil {
-		return nil, err
-	}
-
+func parseSearchEngine(u *url.URL) (*SearchEngine, error) {
 	hostParts := strings.Split(refUrl.Host, ".")
 	query := refUrl.Query()
 	for _, engine := range SearchEngines {
@@ -173,23 +223,4 @@ func (r *Referrer) ParseSearchEngine() (*SearchEngine, error) {
 		}
 	}
 	return nil, nil
-}
-
-func (r *Referrer) Parse(directDomains []string) (*Direct, *Social, *SearchEngine, error) {
-	direct, err := r.ParseDirect(directDomains)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	social, err := r.ParseSocial()
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	engine, err := r.ParseSearchEngine()
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	return direct, social, engine, nil
 }
