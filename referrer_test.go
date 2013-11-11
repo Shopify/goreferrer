@@ -10,8 +10,9 @@ func TestRelativeUrl(t *testing.T) {
 	url := `buh`
 	r, err := Parse(url)
 
-	assert.Error(t, err)
-	assert.Nil(t, r)
+	assert.NoError(t, err)
+	indirect := r.(*Indirect)
+	assert.Equal(t, indirect.Url, url)
 }
 
 func TestNotSearchDirectOrSocial(t *testing.T) {
