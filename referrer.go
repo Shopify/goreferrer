@@ -40,41 +40,38 @@ type Indirect struct {
 	Url string
 }
 
-func (r Indirect) Kind() Kind {
+func (r *Indirect) Kind() Kind {
 	return KindIndirect
 }
 
 type SearchEngine struct {
-	Indirect
-
+	Url    string
 	Label  string
 	Domain string
 	Params []string
 	Query  string
 }
 
-func (r SearchEngine) Kind() Kind {
+func (r *SearchEngine) Kind() Kind {
 	return KindSearchEngine
 }
 
 type Social struct {
-	Indirect
-
+	Url     string
 	Label   string
 	Domains []string
 }
 
-func (r Social) Kind() Kind {
+func (r *Social) Kind() Kind {
 	return KindSocial
 }
 
 type Direct struct {
-	Indirect
-
+	Url    string
 	Domain string
 }
 
-func (r Direct) Kind() Kind {
+func (r *Direct) Kind() Kind {
 	return KindDirect
 }
 
@@ -133,7 +130,7 @@ func readSocials(socialsPath string) ([]Social, error) {
 	return socials, nil
 }
 
-func ParseEx(url string, directDomains []string) (*Referrer, error) {
+func ParseEx(url string, directDomains []string) (Referrer, error) {
 	refUrl, err := parseUrl(url)
 	if err != nil {
 		return nil, err
@@ -145,7 +142,8 @@ func ParseEx(url string, directDomains []string) (*Referrer, error) {
 			return nil, err
 		}
 		if direct != nil {
-			return &Referrer(*direct), nil
+			direct.Url = url
+			return direct, nil
 		}
 	}
 
@@ -154,7 +152,8 @@ func ParseEx(url string, directDomains []string) (*Referrer, error) {
 		return nil, err
 	}
 	if social != nil {
-		return &Referrer(*social), nil
+		social.Url = url
+		return social, nil
 	}
 
 	engine, err := parseSearchEngine(refUrl)
@@ -162,13 +161,14 @@ func ParseEx(url string, directDomains []string) (*Referrer, error) {
 		return nil, err
 	}
 	if engine != nil {
-		return &Referrer(*engine), nil
+		engine.Url = url
+		return engine, nil
 	}
 
-	return &Referrer(Indirect{url}), nil
+	return &Indirect{url}, nil
 }
 
-func Parse(url string) (*Referrer, error) {
+func Parse(url string) (Referrer, error) {
 	return ParseEx(url, nil)
 }
 
@@ -182,11 +182,8 @@ func parseUrl(u string) (*url.URL, error) {
 
 func parseDirect(u *url.URL, directDomains []string) (*Direct, error) {
 	for _, host := range directDomains {
-		if host == refUrl.Host {
-			d := new(Direct)
-			d.Url = r.Url
-			d.Domain = host
-			return d, nil
+		if host == u.Host {
+			return &Direct{Domain: host}, nil
 		}
 	}
 	return nil, nil
@@ -195,8 +192,8 @@ func parseDirect(u *url.URL, directDomains []string) (*Direct, error) {
 func parseSocial(u *url.URL) (*Social, error) {
 	for _, social := range Socials {
 		for _, domain := range social.Domains {
-			if domain == refUrl.Host {
-				return &social, nil
+			if domain == u.Host {
+				return &Social{Label: social.Label}, nil
 			}
 		}
 	}
@@ -204,19 +201,14 @@ func parseSocial(u *url.URL) (*Social, error) {
 }
 
 func parseSearchEngine(u *url.URL) (*SearchEngine, error) {
-	hostParts := strings.Split(refUrl.Host, ".")
-	query := refUrl.Query()
+	hostParts := strings.Split(u.Host, ".")
+	query := u.Query()
 	for _, engine := range SearchEngines {
 		for _, hostPart := range hostParts {
 			if hostPart == engine.Domain {
 				for _, param := range engine.Params {
 					if search, ok := query[param]; ok {
-						e := new(SearchEngine)
-						e.Query = search[0]
-						e.Label = engine.Label
-						e.Domain = engine.Domain
-						e.Params = engine.Params
-						return e, nil
+						return &SearchEngine{Label: engine.Label, Query: search[0]}, nil
 					}
 				}
 			}
