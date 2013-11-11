@@ -103,46 +103,54 @@ func readSocials(socialsPath string) ([]Social, error) {
 	return socials, nil
 }
 
-func ParseEx(url string, directDomains []string) (interface{}, error) {
+func Parse(url string) (interface{}, error) {
 	refUrl, err := parseUrl(url)
 	if err != nil {
 		return nil, err
 	}
+	return parse(url, refUrl)
+}
 
+func ParseWithDirect(url string, directDomains ...string) (interface{}, error) {
+	refUrl, err := parseUrl(url)
+	if err != nil {
+		return nil, err
+	}
+	return parseWithDirect(url, refUrl, directDomains)
+}
+
+func parseWithDirect(u string, refUrl *url.URL, directDomains []string) (interface{}, error) {
 	if directDomains != nil {
 		direct, err := parseDirect(refUrl, directDomains)
 		if err != nil {
 			return nil, err
 		}
 		if direct != nil {
-			direct.Url = url
+			direct.Url = u
 			return direct, nil
 		}
 	}
+	return parse(u, refUrl)
+}
 
+func parse(u string, refUrl *url.URL) (interface{}, error) {
 	social, err := parseSocial(refUrl)
 	if err != nil {
 		return nil, err
 	}
 	if social != nil {
-		social.Url = url
+		social.Url = u
 		return social, nil
 	}
-
 	engine, err := parseSearch(refUrl)
 	if err != nil {
 		return nil, err
 	}
 	if engine != nil {
-		engine.Url = url
+		engine.Url = u
 		return engine, nil
 	}
-
-	return &Indirect{url}, nil
-}
-
-func Parse(url string) (interface{}, error) {
-	return ParseEx(url, nil)
+	return &Indirect{u}, nil
 }
 
 func parseUrl(u string) (*url.URL, error) {

@@ -1,7 +1,7 @@
 goreferrer
 ==========
 
-A Go package that analyzes and classifies different kinds of referrer URLs (search, social, ...)
+A Go package that analyzes and classifies different kinds of referrer URLs (search, social, ...).
 
 ## Search
 
@@ -13,7 +13,7 @@ Social is a  referrer from a set of well know social sites
 
 ## Direct
 
-Direct is an internal referrer. The url host must match the domains listed as arguments to the ParseEx call.
+Direct is an internal referrer. Direct referrer can only be obtained by calling the extended version of the parsing function referrer.ParseWithDirect(). The additional arguments specify the domains that are to be considered "direct".
 
 ## Indirect
 
@@ -31,7 +31,7 @@ Indirect is a referrer that doesn't match any of the above.
 		"http://yoursite.com/links"
 	}
 	for url := range urls {
-		r, err := referrer.ParseEx(url,"mysite.com")
+		r, err := referrer.ParseWithDirect(url,"mysite.com")
 		switch r := r.(type) {
 		case *Search: fmt.Printf("Search %s: %s",r.Label, r.Query)
 		case *Social: fmt.Printf("Social %s", r.Label)

@@ -85,7 +85,7 @@ func TestSearchWithCyrillics(t *testing.T) {
 func TestDirectSimple(t *testing.T) {
 	url := "http://example.com"
 
-	r, err := ParseEx(url, []string{"example.com", "sample.com"})
+	r, err := ParseWithDirect(url, "example.com", "sample.com")
 	assert.NoError(t, err)
 
 	direct := r.(*Direct)
