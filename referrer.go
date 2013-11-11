@@ -10,9 +10,6 @@ import (
 	"sync"
 )
 
-// engines.csv from https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingTraffic
-// Updated on 2013-11-06 (mk)
-// Format: label:domain:params
 const (
 	DataDir         = "./data"
 	EnginesFilename = "engines.csv"
@@ -20,20 +17,25 @@ const (
 )
 
 var (
-	SearchEngines []Search
-	Socials       []Social
+	SearchEngines []Search // list of known search engines
+	Socials       []Social // list of known social sites
 	once          sync.Once
 )
 
+// Indirect is a referrer that doesn't match any of the other referrer types.
 type Indirect struct {
 	Url string
 }
 
+// Direct is an internal referrer.
+// It can only be obtained by calling the extended ParseWithDirect()
 type Direct struct {
 	Indirect
 	Domain string
 }
 
+// Search is a referrer from a set of well known search engines as defined by Google Analytics.
+// https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingTraffic.
 type Search struct {
 	Indirect
 	Label  string
@@ -42,6 +44,7 @@ type Search struct {
 	Query  string
 }
 
+// Social is a referrer from a set of well know social sites.
 type Social struct {
 	Indirect
 	Label   string
@@ -103,6 +106,8 @@ func readSocials(socialsPath string) ([]Social, error) {
 	return socials, nil
 }
 
+// Parse takes a URL string and turns it into one of the supported referrer types.
+// It returns an error if the input is not a valid URL input.
 func Parse(url string) (interface{}, error) {
 	refUrl, err := parseUrl(url)
 	if err != nil {
@@ -111,6 +116,8 @@ func Parse(url string) (interface{}, error) {
 	return parse(url, refUrl)
 }
 
+// ParseWithDirect is an extended version of Parse that adds Direct to the set of possible results.
+// The additional arguments specify the domains that are to be considered "direct".
 func ParseWithDirect(url string, directDomains ...string) (interface{}, error) {
 	refUrl, err := parseUrl(url)
 	if err != nil {

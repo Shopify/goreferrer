@@ -3,22 +3,6 @@ goreferrer
 
 A Go package that analyzes and classifies different kinds of referrer URLs (search, social, ...).
 
-## Search
-
-Search is a referrer from a set of well known search engines as defined by [Google Analytics](https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingTraffic).
-
-## Social
-
-Social is a referrer from a set of well know social sites.
-
-## Direct
-
-Direct is an internal referrer. Direct referrer can only be obtained by calling the extended version of the parsing function ParseWithDirect() with additional arguments specifying the domains that are to be considered "direct".
-
-## Indirect
-
-Indirect is a referrer that doesn't match any of the above.
-
 ## Example
 
 ```
