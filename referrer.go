@@ -10,8 +10,6 @@ import (
 	"sync"
 )
 
-type Kind int
-
 // engines.csv from https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingTraffic
 // Updated on 2013-11-06 (mk)
 // Format: label:domain:params
@@ -19,60 +17,35 @@ const (
 	DataDir         = "./data"
 	EnginesFilename = "engines.csv"
 	SocialsFilename = "socials.csv"
-
-	KindIndirect Kind = iota
-	KindDirect
-	KindSocial
-	KindSearchEngine
 )
 
 var (
-	SearchEngines []SearchEngine
+	SearchEngines []Search
 	Socials       []Social
 	once          sync.Once
 )
-
-type Referrer interface {
-	Kind() Kind
-}
 
 type Indirect struct {
 	Url string
 }
 
-func (r *Indirect) Kind() Kind {
-	return KindIndirect
+type Direct struct {
+	Indirect
+	Domain string
 }
 
-type SearchEngine struct {
-	Url    string
+type Search struct {
+	Indirect
 	Label  string
 	Domain string
 	Params []string
 	Query  string
 }
 
-func (r *SearchEngine) Kind() Kind {
-	return KindSearchEngine
-}
-
 type Social struct {
-	Url     string
+	Indirect
 	Label   string
 	Domains []string
-}
-
-func (r *Social) Kind() Kind {
-	return KindSocial
-}
-
-type Direct struct {
-	Url    string
-	Domain string
-}
-
-func (r *Direct) Kind() Kind {
-	return KindDirect
 }
 
 func init() {
@@ -94,19 +67,19 @@ func Init(enginesPath string, socialsPath string) error {
 	return err
 }
 
-func readSearchEngines(enginesPath string) ([]SearchEngine, error) {
+func readSearchEngines(enginesPath string) ([]Search, error) {
 	enginesCsv, err := ioutil.ReadFile(enginesPath)
 	if err != nil {
 		return nil, err
 	}
-	var engines []SearchEngine
+	var engines []Search
 	scanner := bufio.NewScanner(strings.NewReader(string(enginesCsv)))
 	for scanner.Scan() {
 		line := strings.Trim(scanner.Text(), " \n\r\t")
 		if line != "" {
 			tokens := strings.Split(line, ":")
 			params := strings.Split(tokens[2], ",")
-			engines = append(engines, SearchEngine{Label: tokens[0], Domain: tokens[1], Params: params})
+			engines = append(engines, Search{Label: tokens[0], Domain: tokens[1], Params: params})
 		}
 	}
 	return engines, nil
@@ -130,7 +103,7 @@ func readSocials(socialsPath string) ([]Social, error) {
 	return socials, nil
 }
 
-func ParseEx(url string, directDomains []string) (Referrer, error) {
+func ParseEx(url string, directDomains []string) (interface{}, error) {
 	refUrl, err := parseUrl(url)
 	if err != nil {
 		return nil, err
@@ -156,7 +129,7 @@ func ParseEx(url string, directDomains []string) (Referrer, error) {
 		return social, nil
 	}
 
-	engine, err := parseSearchEngine(refUrl)
+	engine, err := parseSearch(refUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +141,7 @@ func ParseEx(url string, directDomains []string) (Referrer, error) {
 	return &Indirect{url}, nil
 }
 
-func Parse(url string) (Referrer, error) {
+func Parse(url string) (interface{}, error) {
 	return ParseEx(url, nil)
 }
 
@@ -200,7 +173,7 @@ func parseSocial(u *url.URL) (*Social, error) {
 	return nil, nil
 }
 
-func parseSearchEngine(u *url.URL) (*SearchEngine, error) {
+func parseSearch(u *url.URL) (*Search, error) {
 	hostParts := strings.Split(u.Host, ".")
 	query := u.Query()
 	for _, engine := range SearchEngines {
@@ -208,7 +181,7 @@ func parseSearchEngine(u *url.URL) (*SearchEngine, error) {
 			if hostPart == engine.Domain {
 				for _, param := range engine.Params {
 					if search, ok := query[param]; ok {
-						return &SearchEngine{Label: engine.Label, Query: search[0]}, nil
+						return &Search{Label: engine.Label, Query: search[0]}, nil
 					}
 				}
 			}

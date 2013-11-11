@@ -6,10 +6,6 @@ import (
 	"testing"
 )
 
-var (
-	ExampleDirectDomains = []string{"example.com", "sample.com"}
-)
-
 func TestRelativeUrl(t *testing.T) {
 	url := `buh`
 	r, err := Parse(url)
@@ -22,8 +18,19 @@ func TestNotSearchDirectOrSocial(t *testing.T) {
 	url := "http://unicorns.ca/"
 	r, err := Parse(url)
 	assert.NoError(t, err)
-	assert.Equal(t, r.Kind(), KindIndirect)
 	assert.Equal(t, url, r.(*Indirect).Url)
+}
+
+func TestSearchSimple(t *testing.T) {
+	r, err := Parse("http://ca.search.yahoo.com/search?p=hello")
+	assert.NoError(t, err)
+	switch r := r.(type) {
+	case *Search:
+		assert.Equal(t, r.Label, "Yahoo")
+		assert.Equal(t, r.Query, "hello")
+	default:
+		assert.Fail(t, "Wrong referrer result!")
+	}
 }
 
 func TestSearchNonAscii(t *testing.T) {
@@ -32,9 +39,8 @@ func TestSearchNonAscii(t *testing.T) {
 
 	r, err := Parse(url)
 	assert.NoError(t, err)
-	assert.Equal(t, r.Kind(), KindSearchEngine)
 
-	engine := r.(*SearchEngine)
+	engine := r.(*Search)
 	assert.Equal(t, engine.Label, "Yahoo")
 	assert.True(t, strings.Contains(engine.Query, "\u00F8"))
 	assert.Equal(t, engine.Query, "vinduespudsning myshopify rengøring mkobetic")
@@ -45,9 +51,8 @@ func TestSearchWithExplicitPlus(t *testing.T) {
 
 	r, err := Parse(url)
 	assert.NoError(t, err)
-	assert.Equal(t, r.Kind(), KindSearchEngine)
 
-	engine := r.(*SearchEngine)
+	engine := r.(*Search)
 	assert.Equal(t, engine.Label, "Yahoo")
 	assert.True(t, strings.Contains(engine.Query, "11 + 11"))
 	assert.Equal(t, engine.Query, `vinduespudsning JOKAPOLAR "11 + 11" mkobetic`)
@@ -58,9 +63,8 @@ func TestSearchWithNonAscii(t *testing.T) {
 
 	r, err := Parse(url)
 	assert.NoError(t, err)
-	assert.Equal(t, r.Kind(), KindSearchEngine)
 
-	engine := r.(*SearchEngine)
+	engine := r.(*Search)
 	assert.Equal(t, engine.Label, "Yahoo")
 	assert.True(t, strings.Contains(engine.Query, "rengøring"))
 	assert.Equal(t, engine.Query, `vinduespudsning myshopify rengøring mkobetic`)
@@ -71,9 +75,8 @@ func TestSearchWithCyrillics(t *testing.T) {
 
 	r, err := Parse(url)
 	assert.NoError(t, err)
-	assert.Equal(t, r.Kind(), KindSearchEngine)
 
-	engine := r.(*SearchEngine)
+	engine := r.(*Search)
 	assert.Equal(t, engine.Label, "Yandex")
 	assert.True(t, strings.Contains(engine.Query, "ботинки"))
 	assert.Equal(t, engine.Query, `ботинки packer-shoes`)
@@ -82,9 +85,8 @@ func TestSearchWithCyrillics(t *testing.T) {
 func TestDirectSimple(t *testing.T) {
 	url := "http://example.com"
 
-	r, err := ParseEx(url, ExampleDirectDomains)
+	r, err := ParseEx(url, []string{"example.com", "sample.com"})
 	assert.NoError(t, err)
-	assert.Equal(t, r.Kind(), KindDirect)
 
 	direct := r.(*Direct)
 	assert.NotNil(t, direct)
@@ -97,7 +99,6 @@ func TestSocialSimple(t *testing.T) {
 
 	r, err := Parse(url)
 	assert.NoError(t, err)
-	assert.Equal(t, r.Kind(), KindSocial)
 
 	social := r.(*Social)
 	assert.NotNil(t, social)
