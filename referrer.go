@@ -2,7 +2,6 @@ package referrer
 
 import (
 	"bufio"
-	"errors"
 	"io/ioutil"
 	"net/url"
 	"path"
@@ -112,9 +111,6 @@ func parseUrl(u string) (*url.URL, error) {
 	refUrl, err := url.Parse(u)
 	if err != nil {
 		return nil, err
-	}
-	if !refUrl.IsAbs() {
-		return nil, errors.New("Referrer URL must be absolute")
 	}
 	return refUrl, nil
 }
