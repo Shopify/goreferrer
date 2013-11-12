@@ -83,12 +83,13 @@ func TestSearchWithCyrillics(t *testing.T) {
 	assert.Equal(t, engine.Query, `ботинки packer-shoes`)
 }
 
-func TestReferrerWithPercent(t *testing.T) {
-	url := `http://example.com/100%-ab/`
+func TestReferrerWithPercentInPath(t *testing.T) {
+	url := `http://www.amazon.co.uk/RUBBING-ALCOHOL-WINTERGREEN-50%25-500ml/dp/B008C008AC/ref=sr_1_11?ie=UTF8&qid=1384262755&sr=8-11&keywords=rubbing+alcohol`
 	r, err := Parse(url)
 	assert.NoError(t, err)
 
 	ref := r.(*Indirect)
+	assert.True(t, strings.Contains(ref.Url, "%25"))
 	assert.Equal(t, ref.Url, url)
 }
 

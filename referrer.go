@@ -154,7 +154,6 @@ func parse(u string, refUrl *url.URL) (interface{}, error) {
 }
 
 func parseUrl(u string) (*url.URL, error) {
-	u = strings.Replace(u, "%-", "\\%", -1)
 	refUrl, err := url.Parse(u)
 	if err != nil {
 		return nil, err
@@ -185,6 +184,7 @@ func parseSocial(u *url.URL) (*Social, error) {
 func parseSearch(u *url.URL) (*Search, error) {
 	hostParts := strings.Split(u.Host, ".")
 	query := u.Query()
+
 	for _, engine := range SearchEngines {
 		for _, hostPart := range hostParts {
 			if hostPart == engine.Domain {
