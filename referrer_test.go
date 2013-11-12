@@ -107,6 +107,20 @@ func TestSocialSimple(t *testing.T) {
 	assert.Equal(t, social.Label, "Twitter")
 }
 
+func ExampleParseWithDirect() {
+	r, err := ParseWithDirect("http://mysite2.com/products/ties", "mysite1.com", "mysite2.com")
+	if err != nil {
+		panic(err)
+	}
+	direct, ok := r.(*Direct)
+	if !ok {
+		panic("Didn't get a Direct")
+	}
+	fmt.Printf("Direct %s\n", direct.Domain)
+	// Output:
+	// Direct mysite2.com
+}
+
 func ExampleParse() {
 	urls := []string{
 		"http://ca.search.yahoo.com/search?p=hello",
