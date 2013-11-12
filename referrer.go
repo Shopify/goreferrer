@@ -39,16 +39,16 @@ type Direct struct {
 type Search struct {
 	Indirect
 	Label  string
-	Domain string
-	Params []string
 	Query  string
+	domain string
+	params []string
 }
 
 // Social is a referrer from a set of well know social sites.
 type Social struct {
 	Indirect
 	Label   string
-	Domains []string
+	domains []string
 }
 
 func init() {
@@ -82,7 +82,7 @@ func readSearchEngines(enginesPath string) (map[string]Search, error) {
 		if line != "" {
 			tokens := strings.Split(line, ":")
 			params := strings.Split(tokens[2], ",")
-			engines[tokens[1]] = Search{Label: tokens[0], Domain: tokens[1], Params: params}
+			engines[tokens[1]] = Search{Label: tokens[0], domain: tokens[1], params: params}
 		}
 	}
 	return engines, nil
@@ -100,7 +100,7 @@ func readSocials(socialsPath string) ([]Social, error) {
 		if line != "" {
 			tokens := strings.Split(line, ":")
 			domains := strings.Split(tokens[1], ",")
-			socials = append(socials, Social{Label: tokens[0], Domains: domains})
+			socials = append(socials, Social{Label: tokens[0], domains: domains})
 		}
 	}
 	return socials, nil
@@ -179,7 +179,7 @@ func parseDirect(u *url.URL, directDomains []string) (*Direct, error) {
 
 func parseSocial(u *url.URL) (*Social, error) {
 	for _, social := range Socials {
-		for _, domain := range social.Domains {
+		for _, domain := range social.domains {
 			if domain == u.Host {
 				return &Social{Label: social.Label}, nil
 			}
@@ -193,7 +193,7 @@ func parseSearch(u *url.URL) (*Search, error) {
 	query := u.Query()
 	for _, hostPart := range hostParts {
 		if engine, present := SearchEngines[hostPart]; present {
-			for _, param := range engine.Params {
+			for _, param := range engine.params {
 				if search, ok := query[param]; ok {
 					return &Search{Label: engine.Label, Query: search[0]}, nil
 				}
