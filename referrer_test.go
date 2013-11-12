@@ -1,6 +1,7 @@
 package referrer
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -104,4 +105,31 @@ func TestSocialSimple(t *testing.T) {
 	social := r.(*Social)
 	assert.NotNil(t, social)
 	assert.Equal(t, social.Label, "Twitter")
+}
+
+func ExampleParse() {
+	urls := []string{
+		"http://ca.search.yahoo.com/search?p=hello",
+		"https://twitter.com/jdoe/status/391149968360103936",
+		"http://yoursite.com/links",
+	}
+
+	for _, url := range urls {
+		r, err := Parse(url)
+		if err != nil {
+			panic(err)
+		}
+		switch r := r.(type) {
+		case *Search:
+			fmt.Printf("Search %s: %s\n", r.Label, r.Query)
+		case *Social:
+			fmt.Printf("Social %s\n", r.Label)
+		case *Indirect:
+			fmt.Printf("Indirect: %s\n", r.Url)
+		}
+	}
+	// Output:
+	// Search Yahoo: hello
+	// Social Twitter
+	// Indirect: http://yoursite.com/links
 }

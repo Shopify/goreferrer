@@ -1,3 +1,4 @@
+// Referrer analyzes and classifies different kinds of referrer URLs (search, social, ...).
 package referrer
 
 import (
