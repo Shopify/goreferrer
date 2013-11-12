@@ -17,8 +17,8 @@ const (
 )
 
 var (
-	SearchEngines []Search // list of known search engines
-	Socials       []Social // list of known social sites
+	SearchEngines map[string]Search // list of known search engines
+	Socials       []Social          // list of known social sites
 	once          sync.Once
 )
 
@@ -70,19 +70,19 @@ func Init(enginesPath string, socialsPath string) error {
 	return err
 }
 
-func readSearchEngines(enginesPath string) ([]Search, error) {
+func readSearchEngines(enginesPath string) (map[string]Search, error) {
 	enginesCsv, err := ioutil.ReadFile(enginesPath)
 	if err != nil {
 		return nil, err
 	}
-	var engines []Search
+	engines := make(map[string]Search)
 	scanner := bufio.NewScanner(strings.NewReader(string(enginesCsv)))
 	for scanner.Scan() {
 		line := strings.Trim(scanner.Text(), " \n\r\t")
 		if line != "" {
 			tokens := strings.Split(line, ":")
 			params := strings.Split(tokens[2], ",")
-			engines = append(engines, Search{Label: tokens[0], Domain: tokens[1], Params: params})
+			engines[tokens[1]] = Search{Label: tokens[0], Domain: tokens[1], Params: params}
 		}
 	}
 	return engines, nil
@@ -191,13 +191,11 @@ func parseSocial(u *url.URL) (*Social, error) {
 func parseSearch(u *url.URL) (*Search, error) {
 	hostParts := strings.Split(u.Host, ".")
 	query := u.Query()
-	for _, engine := range SearchEngines {
-		for _, hostPart := range hostParts {
-			if hostPart == engine.Domain {
-				for _, param := range engine.Params {
-					if search, ok := query[param]; ok {
-						return &Search{Label: engine.Label, Query: search[0]}, nil
-					}
+	for _, hostPart := range hostParts {
+		if engine, present := SearchEngines[hostPart]; present {
+			for _, param := range engine.Params {
+				if search, ok := query[param]; ok {
+					return &Search{Label: engine.Label, Query: search[0]}, nil
 				}
 			}
 		}
