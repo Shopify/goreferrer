@@ -25,22 +25,22 @@ var (
 
 // Indirect is a referrer that doesn't match any of the other referrer types.
 type Indirect struct {
-	Url string
+	Url string // original referrer URL
 }
 
 // Direct is an internal referrer.
 // It can only be obtained by calling the extended ParseWithDirect()
 type Direct struct {
 	Indirect
-	Domain string
+	Domain string // direct domain that matched the URL
 }
 
 // Search is a referrer from a set of well known search engines as defined by Google Analytics.
 // https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingTraffic.
 type Search struct {
 	Indirect
-	Label  string
-	Query  string
+	Label  string // search engine label, e.g Google
+	Query  string // decoded search query
 	domain string
 	params []string
 }
@@ -48,7 +48,7 @@ type Search struct {
 // Social is a referrer from a set of well know social sites.
 type Social struct {
 	Indirect
-	Label   string
+	Label   string // social site label, e.g. Twitter
 	domains []string
 }
 
@@ -64,6 +64,7 @@ func init() {
 	})
 }
 
+// Init can be used to load custom definitions of social sites and search engines
 func Init(enginesPath string, socialsPath string) error {
 	var err error
 	SearchEngines, err = readSearchEngines(enginesPath)
