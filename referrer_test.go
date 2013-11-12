@@ -83,6 +83,15 @@ func TestSearchWithCyrillics(t *testing.T) {
 	assert.Equal(t, engine.Query, `ботинки packer-shoes`)
 }
 
+func TestReferrerWithPercent(t *testing.T) {
+	url := `http://example.com/100%-ab/`
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	ref := r.(*Indirect)
+	assert.Equal(t, ref.Url, url)
+}
+
 func TestDirectSimple(t *testing.T) {
 	url := "http://example.com"
 
