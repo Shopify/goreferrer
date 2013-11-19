@@ -7,20 +7,20 @@ import (
 	"testing"
 )
 
-func TestRelativeUrl(t *testing.T) {
+func TestRelativeURL(t *testing.T) {
 	url := `buh`
 	r, err := Parse(url)
 
 	assert.NoError(t, err)
 	indirect := r.(*Indirect)
-	assert.Equal(t, indirect.Url, url)
+	assert.Equal(t, indirect.URL, url)
 }
 
 func TestNotSearchDirectOrSocial(t *testing.T) {
 	url := "http://unicorns.ca/"
 	r, err := Parse(url)
 	assert.NoError(t, err)
-	assert.Equal(t, url, r.(*Indirect).Url)
+	assert.Equal(t, url, r.(*Indirect).URL)
 }
 
 func TestSearchSimple(t *testing.T) {
@@ -92,7 +92,7 @@ func TestDirectSimple(t *testing.T) {
 
 	direct := r.(*Direct)
 	assert.NotNil(t, direct)
-	assert.Equal(t, direct.Url, url)
+	assert.Equal(t, direct.URL, url)
 	assert.Equal(t, direct.Domain, "example.com")
 }
 
@@ -139,7 +139,7 @@ func ExampleParse() {
 		case *Social:
 			fmt.Printf("Social %s\n", r.Label)
 		case *Indirect:
-			fmt.Printf("Indirect: %s\n", r.Url)
+			fmt.Printf("Indirect: %s\n", r.URL)
 		}
 	}
 	// Output:
