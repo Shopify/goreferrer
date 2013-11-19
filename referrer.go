@@ -1,3 +1,4 @@
+// Referrer analyzes and classifies different kinds of referrer URLs (search, social, ...).
 package referrer
 
 import (
@@ -10,9 +11,6 @@ import (
 	"sync"
 )
 
-// engines.csv from https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingTraffic
-// Updated on 2013-11-06 (mk)
-// Format: label:domain:params
 const (
 	DataDir         = "./data"
 	EnginesFilename = "engines.csv"
@@ -20,30 +18,38 @@ const (
 )
 
 var (
-	SearchEngines []SearchEngine
-	Socials       []Social
+	SearchEngines map[string]Search // list of known search engines
+	Socials       []Social          // list of known social sites
 	once          sync.Once
 )
 
-type Referrer struct {
-	Url string
+// Indirect is a referrer that doesn't match any of the other referrer types.
+type Indirect struct {
+	Url string // original referrer URL
 }
 
-type SearchEngine struct {
-	Label  string
-	Domain string
-	Params []string
-	Query  string
-}
-
-type Social struct {
-	Label   string
-	Domains []string
-}
-
+// Direct is an internal referrer.
+// It can only be obtained by calling the extended ParseWithDirect()
 type Direct struct {
-	Url    string
-	Domain string
+	Indirect
+	Domain string // direct domain that matched the URL
+}
+
+// Search is a referrer from a set of well known search engines as defined by Google Analytics.
+// https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingTraffic.
+type Search struct {
+	Indirect
+	Label  string // search engine label, e.g Google
+	Query  string // decoded search query
+	domain string
+	params []string
+}
+
+// Social is a referrer from a set of well know social sites.
+type Social struct {
+	Indirect
+	Label   string // social site label, e.g. Twitter
+	domains []string
 }
 
 func init() {
@@ -58,6 +64,7 @@ func init() {
 	})
 }
 
+// Init can be used to load custom definitions of social sites and search engines
 func Init(enginesPath string, socialsPath string) error {
 	var err error
 	SearchEngines, err = readSearchEngines(enginesPath)
@@ -65,19 +72,19 @@ func Init(enginesPath string, socialsPath string) error {
 	return err
 }
 
-func readSearchEngines(enginesPath string) ([]SearchEngine, error) {
+func readSearchEngines(enginesPath string) (map[string]Search, error) {
 	enginesCsv, err := ioutil.ReadFile(enginesPath)
 	if err != nil {
 		return nil, err
 	}
-	var engines []SearchEngine
+	engines := make(map[string]Search)
 	scanner := bufio.NewScanner(strings.NewReader(string(enginesCsv)))
 	for scanner.Scan() {
 		line := strings.Trim(scanner.Text(), " \n\r\t")
 		if line != "" {
 			tokens := strings.Split(line, ":")
 			params := strings.Split(tokens[2], ",")
-			engines = append(engines, SearchEngine{Label: tokens[0], Domain: tokens[1], Params: params})
+			engines[tokens[1]] = Search{Label: tokens[0], domain: tokens[1], params: params}
 		}
 	}
 	return engines, nil
@@ -95,16 +102,64 @@ func readSocials(socialsPath string) ([]Social, error) {
 		if line != "" {
 			tokens := strings.Split(line, ":")
 			domains := strings.Split(tokens[1], ",")
-			socials = append(socials, Social{Label: tokens[0], Domains: domains})
+			socials = append(socials, Social{Label: tokens[0], domains: domains})
 		}
 	}
 	return socials, nil
 }
 
-func New(url string) *Referrer {
-	r := new(Referrer)
-	r.Url = url
-	return r
+// Parse takes a URL string and turns it into one of the supported referrer types.
+// It returns an error if the input is not a valid URL input.
+func Parse(url string) (interface{}, error) {
+	refUrl, err := parseUrl(url)
+	if err != nil {
+		return nil, err
+	}
+	return parse(url, refUrl)
+}
+
+// ParseWithDirect is an extended version of Parse that adds Direct to the set of possible results.
+// The additional arguments specify the domains that are to be considered "direct".
+func ParseWithDirect(url string, directDomains ...string) (interface{}, error) {
+	refUrl, err := parseUrl(url)
+	if err != nil {
+		return nil, err
+	}
+	return parseWithDirect(url, refUrl, directDomains)
+}
+
+func parseWithDirect(u string, refUrl *url.URL, directDomains []string) (interface{}, error) {
+	if directDomains != nil {
+		direct, err := parseDirect(refUrl, directDomains)
+		if err != nil {
+			return nil, err
+		}
+		if direct != nil {
+			direct.Url = u
+			return direct, nil
+		}
+	}
+	return parse(u, refUrl)
+}
+
+func parse(u string, refUrl *url.URL) (interface{}, error) {
+	social, err := parseSocial(refUrl)
+	if err != nil {
+		return nil, err
+	}
+	if social != nil {
+		social.Url = u
+		return social, nil
+	}
+	engine, err := parseSearch(refUrl)
+	if err != nil {
+		return nil, err
+	}
+	if engine != nil {
+		engine.Url = u
+		return engine, nil
+	}
+	return &Indirect{u}, nil
 }
 
 func parseUrl(u string) (*url.URL, error) {
@@ -115,81 +170,37 @@ func parseUrl(u string) (*url.URL, error) {
 	return refUrl, nil
 }
 
-func (r *Referrer) ParseDirect(directDomains []string) (*Direct, error) {
-	refUrl, err := parseUrl(r.Url)
-	if err != nil {
-		return nil, err
-	}
-
+func parseDirect(u *url.URL, directDomains []string) (*Direct, error) {
 	for _, host := range directDomains {
-		if host == refUrl.Host {
-			d := new(Direct)
-			d.Url = r.Url
-			d.Domain = host
-			return d, nil
+		if host == u.Host {
+			return &Direct{Domain: host}, nil
 		}
 	}
 	return nil, nil
 }
 
-func (r *Referrer) ParseSocial() (*Social, error) {
-	refUrl, err := parseUrl(r.Url)
-	if err != nil {
-		return nil, err
-	}
-
+func parseSocial(u *url.URL) (*Social, error) {
 	for _, social := range Socials {
-		for _, domain := range social.Domains {
-			if domain == refUrl.Host {
-				return &social, nil
+		for _, domain := range social.domains {
+			if domain == u.Host {
+				return &Social{Label: social.Label}, nil
 			}
 		}
 	}
 	return nil, nil
 }
 
-func (r *Referrer) ParseSearchEngine() (*SearchEngine, error) {
-	refUrl, err := parseUrl(r.Url)
-	if err != nil {
-		return nil, err
-	}
-
-	hostParts := strings.Split(refUrl.Host, ".")
-	query := refUrl.Query()
-	for _, engine := range SearchEngines {
-		for _, hostPart := range hostParts {
-			if hostPart == engine.Domain {
-				for _, param := range engine.Params {
-					if search, ok := query[param]; ok {
-						e := new(SearchEngine)
-						e.Query = search[0]
-						e.Label = engine.Label
-						e.Domain = engine.Domain
-						e.Params = engine.Params
-						return e, nil
-					}
+func parseSearch(u *url.URL) (*Search, error) {
+	hostParts := strings.Split(u.Host, ".")
+	query := u.Query()
+	for _, hostPart := range hostParts {
+		if engine, present := SearchEngines[hostPart]; present {
+			for _, param := range engine.params {
+				if search, ok := query[param]; ok {
+					return &Search{Label: engine.Label, Query: search[0]}, nil
 				}
 			}
 		}
 	}
 	return nil, nil
-}
-
-func (r *Referrer) Parse(directDomains []string) (*Direct, *Social, *SearchEngine, error) {
-	direct, err := r.ParseDirect(directDomains)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	social, err := r.ParseSocial()
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	engine, err := r.ParseSearchEngine()
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	return direct, social, engine, nil
 }
