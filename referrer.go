@@ -5,14 +5,14 @@ import (
 	"bufio"
 	"io/ioutil"
 	"net/url"
-	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
 )
 
 const (
-	DataDir         = "./data"
+	DataDir         = "data"
 	EnginesFilename = "engines.csv"
 	SocialsFilename = "socials.csv"
 )
@@ -55,8 +55,8 @@ type Social struct {
 func init() {
 	_, filename, _, _ := runtime.Caller(1)
 	once.Do(func() {
-		enginesPath := path.Join(path.Dir(filename), path.Join(DataDir, EnginesFilename))
-		socialsPath := path.Join(path.Dir(filename), path.Join(DataDir, SocialsFilename))
+		enginesPath := filepath.Join(filepath.Dir(filename), filepath.Join(DataDir, EnginesFilename))
+		socialsPath := filepath.Join(filepath.Dir(filename), filepath.Join(DataDir, SocialsFilename))
 		err := Init(enginesPath, socialsPath)
 		if err != nil {
 			panic(err)
