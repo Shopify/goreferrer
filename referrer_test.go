@@ -35,6 +35,18 @@ func TestSearchSimple(t *testing.T) {
 	}
 }
 
+func TestSearchBingNotLive(t *testing.T) {
+	r, err := Parse("http://bing.com/?q=blargh")
+	assert.NoError(t, err)
+	switch r := r.(type) {
+	case *Search:
+		assert.Equal(t, r.Label, "Bing")
+		assert.Equal(t, r.Query, "blargh")
+	default:
+		assert.Fail(t, "Wrong referrer result!")
+	}
+}
+
 func TestSearchNonAscii(t *testing.T) {
 	url := "http://ca.search.yahoo.com/search;_ylt=A0geu8fBeW5SqVEAZ2vrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDWmxUdFhVZ2V1eVVMYVp6c1VmRmRMUXUyMkxfbjJsSnVlY0VBQlhDWQRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANVRFRzSGFBUVF0ZUZHZ2hzZ0N3VDNBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgbXlzaG9waWZ5IHJlbmf4cmluZyBta29iZXRpYwR0X3N0bXADMTM4Mjk3MjM1NDIzMwR2dGVzdGlkA01TWUNBQzE-?p=vinduespudsning+myshopify+rengøring+mkobetic&fr2=sb-top&fr=yfp-t-715&rd=r1"
 	assert.True(t, strings.Contains(url, "\u00F8"))

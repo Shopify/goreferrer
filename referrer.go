@@ -81,7 +81,7 @@ func readSearchEngines(enginesPath string) (map[string]Search, error) {
 	scanner := bufio.NewScanner(strings.NewReader(string(enginesCsv)))
 	for scanner.Scan() {
 		line := strings.Trim(scanner.Text(), " \n\r\t")
-		if line != "" {
+		if line != "" && line[0] != '#' {
 			tokens := strings.Split(line, ":")
 			params := strings.Split(tokens[2], ",")
 			engines[tokens[1]] = Search{Label: tokens[0], domain: tokens[1], params: params}
@@ -99,7 +99,7 @@ func readSocials(socialsPath string) ([]Social, error) {
 	scanner := bufio.NewScanner(strings.NewReader(string(socialsCsv)))
 	for scanner.Scan() {
 		line := strings.Trim(scanner.Text(), " \n\r\t")
-		if line != "" {
+		if line != "" && line[0] != '#' {
 			tokens := strings.Split(line, ":")
 			domains := strings.Split(tokens[1], ",")
 			socials = append(socials, Social{Label: tokens[0], domains: domains})
