@@ -1,31 +1,36 @@
-// Referrer analyzes and classifies different kinds of referrer URLs (search, social, ...).
+// Package referrer analyzes and classifies different kinds of referrer URLs (search, social, ...).
 package referrer
 
 import (
 	"bufio"
 	"io/ioutil"
 	"net/url"
-	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
 )
 
 const (
-	DataDir         = "./data"
+	// DataDir contains the CSV files listing recognized search engine and social referrers.
+	DataDir = "data"
+	// EnginesFilename is the CSV file recognizing search engine referrers.
 	EnginesFilename = "engines.csv"
+	// SocialsFilename is the CSV file recognizing social referrers.
 	SocialsFilename = "socials.csv"
 )
 
 var (
-	SearchEngines map[string]Search // list of known search engines
-	Socials       []Social          // list of known social sites
-	once          sync.Once
+	// SearchEngines is a map of known search engines
+	SearchEngines map[string]Search
+	// Socials is a list of known social sites
+	Socials []Social
+	once    sync.Once
 )
 
 // Indirect is a referrer that doesn't match any of the other referrer types.
 type Indirect struct {
-	Url string // original referrer URL
+	URL string // original referrer URL
 }
 
 // Direct is an internal referrer.
@@ -55,8 +60,8 @@ type Social struct {
 func init() {
 	_, filename, _, _ := runtime.Caller(1)
 	once.Do(func() {
-		enginesPath := path.Join(path.Dir(filename), path.Join(DataDir, EnginesFilename))
-		socialsPath := path.Join(path.Dir(filename), path.Join(DataDir, SocialsFilename))
+		enginesPath := filepath.Join(filepath.Dir(filename), filepath.Join(DataDir, EnginesFilename))
+		socialsPath := filepath.Join(filepath.Dir(filename), filepath.Join(DataDir, SocialsFilename))
 		err := Init(enginesPath, socialsPath)
 		if err != nil {
 			panic(err)
@@ -111,63 +116,63 @@ func readSocials(socialsPath string) ([]Social, error) {
 // Parse takes a URL string and turns it into one of the supported referrer types.
 // It returns an error if the input is not a valid URL input.
 func Parse(url string) (interface{}, error) {
-	refUrl, err := parseUrl(url)
+	refURL, err := parseURL(url)
 	if err != nil {
 		return nil, err
 	}
-	return parse(url, refUrl)
+	return parse(url, refURL)
 }
 
 // ParseWithDirect is an extended version of Parse that adds Direct to the set of possible results.
 // The additional arguments specify the domains that are to be considered "direct".
 func ParseWithDirect(url string, directDomains ...string) (interface{}, error) {
-	refUrl, err := parseUrl(url)
+	refURL, err := parseURL(url)
 	if err != nil {
 		return nil, err
 	}
-	return parseWithDirect(url, refUrl, directDomains)
+	return parseWithDirect(url, refURL, directDomains)
 }
 
-func parseWithDirect(u string, refUrl *url.URL, directDomains []string) (interface{}, error) {
+func parseWithDirect(u string, refURL *url.URL, directDomains []string) (interface{}, error) {
 	if directDomains != nil {
-		direct, err := parseDirect(refUrl, directDomains)
+		direct, err := parseDirect(refURL, directDomains)
 		if err != nil {
 			return nil, err
 		}
 		if direct != nil {
-			direct.Url = u
+			direct.URL = u
 			return direct, nil
 		}
 	}
-	return parse(u, refUrl)
+	return parse(u, refURL)
 }
 
-func parse(u string, refUrl *url.URL) (interface{}, error) {
-	social, err := parseSocial(refUrl)
+func parse(u string, refURL *url.URL) (interface{}, error) {
+	social, err := parseSocial(refURL)
 	if err != nil {
 		return nil, err
 	}
 	if social != nil {
-		social.Url = u
+		social.URL = u
 		return social, nil
 	}
-	engine, err := parseSearch(refUrl)
+	engine, err := parseSearch(refURL)
 	if err != nil {
 		return nil, err
 	}
 	if engine != nil {
-		engine.Url = u
+		engine.URL = u
 		return engine, nil
 	}
 	return &Indirect{u}, nil
 }
 
-func parseUrl(u string) (*url.URL, error) {
-	refUrl, err := url.Parse(u)
+func parseURL(u string) (*url.URL, error) {
+	refURL, err := url.Parse(u)
 	if err != nil {
 		return nil, err
 	}
-	return refUrl, nil
+	return refURL, nil
 }
 
 func parseDirect(u *url.URL, directDomains []string) (*Direct, error) {

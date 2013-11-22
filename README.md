@@ -5,7 +5,7 @@ A Go package that analyzes and classifies different kinds of referrer URLs (sear
 
 ## Example
 
-```
+```go
 package main
 
 import (
