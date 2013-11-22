@@ -201,7 +201,7 @@ func parseSearch(u *url.URL) (*Search, error) {
 	for _, hostPart := range hostParts {
 		if engine, present := SearchEngines[hostPart]; present {
 			for _, param := range engine.params {
-				if search, ok := query[param]; ok {
+				if search, ok := query[param]; ok && search[0] != "" {
 					return &Search{Label: engine.Label, Query: search[0]}, nil
 				}
 			}

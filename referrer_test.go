@@ -96,6 +96,16 @@ func TestSearchWithCyrillics(t *testing.T) {
 	assert.Equal(t, engine.Query, `ботинки packer-shoes`)
 }
 
+func TestSearchSiteWithEmptyQuery(t *testing.T) {
+	url := `https://www.google.co.in/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk`
+
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	_, ok := r.(*Indirect)
+	assert.True(t, ok)
+}
+
 func TestDirectSimple(t *testing.T) {
 	url := "http://example.com"
 
