@@ -2,22 +2,17 @@
 package referrer
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/url"
 	"path/filepath"
 	"runtime"
 	"sync"
 )
 
-const (
-	DataDir       = "./data"
-	RulesFilename = "referrers.json"
-)
-
 var (
-	Rules map[string]interface{} // list of known rules for search engines, social sites, and email sites.
-	once  sync.Once
+	SearchRules map[string]SearchRule // domain mapping of known rules for search engines.
+	SocialRules map[string]SocialRule // domain mapping of known rules for social sites.
+	EmailRules  map[string]EmailRule  // domain mapping of known rules for email sites.
+	once        sync.Once
 )
 
 // Indirect is a referrer that doesn't match any of the other referrer types.
@@ -70,20 +65,8 @@ func init() {
 // Init can be used to load custom definitions of social sites and search engines
 func Init(rulesPath string) error {
 	var err error
-	Rules, err = readRules(rulesPath)
+	SearchRules, SocialRules, EmailRules, err = readRules(rulesPath)
 	return err
-}
-
-func readRules(rulesPath string) (map[string]interface{}, error) {
-	rulesJson, err := ioutil.ReadFile(rulesPath)
-	if err != nil {
-		return nil, err
-	}
-	rules := make(map[string]interface{})
-	if err = json.Unmarshal(rulesJson, &rules); err != nil {
-		return nil, err
-	}
-	return rules, nil
 }
 
 // Parse takes a URL string and turns it into one of the supported referrer types.
@@ -168,37 +151,25 @@ func parseDirect(rawUrl string, u *url.URL, directDomains []string) (*Direct, er
 }
 
 func parseSocial(rawUrl string, u *url.URL) (*Social, error) {
-	for label, rule := range Rules["social"].(map[string]interface{}) {
-		for _, domain := range rule.(map[string]interface{})["domains"].([]interface{}) {
-			if domain.(string) == u.Host {
-				return &Social{Url: rawUrl, Domain: domain.(string), Label: label}, nil
-			}
-		}
+	if rule, ok := SocialRules[u.Host]; ok {
+		return &Social{Url: rawUrl, Domain: rule.Domain, Label: rule.Label}, nil
 	}
 	return nil, nil
 }
 
 func parseEmail(rawUrl string, u *url.URL) (*Email, error) {
-	for label, rule := range Rules["email"].(map[string]interface{}) {
-		for _, domain := range rule.(map[string]interface{})["domains"].([]interface{}) {
-			if domain.(string) == u.Host {
-				return &Email{Url: rawUrl, Domain: domain.(string), Label: label}, nil
-			}
-		}
+	if rule, ok := EmailRules[u.Host]; ok {
+		return &Email{Url: rawUrl, Domain: rule.Domain, Label: rule.Label}, nil
 	}
 	return nil, nil
 }
 
 func parseSearch(rawUrl string, u *url.URL) (*Search, error) {
 	query := u.Query()
-	for label, rule := range Rules["search"].(map[string]interface{}) {
-		for _, domain := range rule.(map[string]interface{})["domains"].([]interface{}) {
-			if domain.(string) == u.Host {
-				for _, param := range rule.(map[string]interface{})["parameters"].([]interface{}) {
-					if query := query.Get(param.(string)); query != "" {
-						return &Search{Url: rawUrl, Domain: domain.(string), Label: label, Query: query}, nil
-					}
-				}
+	if rule, ok := SearchRules[u.Host]; ok {
+		for _, param := range rule.Parameters {
+			if query := query.Get(param); query != "" {
+				return &Search{Url: rawUrl, Domain: rule.Domain, Label: rule.Label, Query: query}, nil
 			}
 		}
 	}
