@@ -49,6 +49,13 @@ type Social struct {
 	Label  string // social site label, e.g. Twitter
 }
 
+// Email is a referrer from a set of well know email sites.
+type Email struct {
+	Url    string // email referrer URL
+	Domain string // matched domain of the email site, e.g. mail.google.com.com
+	Label  string // email site label, e.g. Gmail
+}
+
 func init() {
 	_, filename, _, _ := runtime.Caller(1)
 	once.Do(func() {
@@ -112,6 +119,15 @@ func parse(u string, refUrl *url.URL, directDomains []string) (interface{}, erro
 		}
 	}
 
+	// Parse as email referrer.
+	email, err := parseEmail(u, refUrl)
+	if err != nil {
+		return nil, err
+	}
+	if email != nil {
+		return email, nil
+	}
+
 	// Parse as social referrer.
 	social, err := parseSocial(u, refUrl)
 	if err != nil {
@@ -156,6 +172,17 @@ func parseSocial(rawUrl string, u *url.URL) (*Social, error) {
 		for _, domain := range rule.(map[string]interface{})["domains"].([]interface{}) {
 			if domain.(string) == u.Host {
 				return &Social{Url: rawUrl, Domain: domain.(string), Label: label}, nil
+			}
+		}
+	}
+	return nil, nil
+}
+
+func parseEmail(rawUrl string, u *url.URL) (*Email, error) {
+	for label, rule := range Rules["email"].(map[string]interface{}) {
+		for _, domain := range rule.(map[string]interface{})["domains"].([]interface{}) {
+			if domain.(string) == u.Host {
+				return &Email{Url: rawUrl, Domain: domain.(string), Label: label}, nil
 			}
 		}
 	}
