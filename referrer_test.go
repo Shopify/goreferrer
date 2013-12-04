@@ -28,10 +28,10 @@ func TestSearchSimple(t *testing.T) {
 	assert.NoError(t, err)
 	switch r := r.(type) {
 	case *Search:
-		assert.Equal(t, r.Label, "Yahoo")
+		assert.Equal(t, r.Label, "Yahoo!")
 		assert.Equal(t, r.Query, "hello")
 	default:
-		assert.Fail(t, "Wrong referrer result!")
+		assert.Fail(t, fmt.Sprintf("Wrong referrer result: %+v", r))
 	}
 }
 
@@ -55,7 +55,7 @@ func TestSearchNonAscii(t *testing.T) {
 	assert.NoError(t, err)
 
 	engine := r.(*Search)
-	assert.Equal(t, engine.Label, "Yahoo")
+	assert.Equal(t, engine.Label, "Yahoo!")
 	assert.True(t, strings.Contains(engine.Query, "\u00F8"))
 	assert.Equal(t, engine.Query, "vinduespudsning myshopify rengøring mkobetic")
 }
@@ -67,7 +67,7 @@ func TestSearchWithExplicitPlus(t *testing.T) {
 	assert.NoError(t, err)
 
 	engine := r.(*Search)
-	assert.Equal(t, engine.Label, "Yahoo")
+	assert.Equal(t, engine.Label, "Yahoo!")
 	assert.True(t, strings.Contains(engine.Query, "11 + 11"))
 	assert.Equal(t, engine.Query, `vinduespudsning JOKAPOLAR "11 + 11" mkobetic`)
 }
@@ -79,7 +79,7 @@ func TestSearchWithNonAscii(t *testing.T) {
 	assert.NoError(t, err)
 
 	engine := r.(*Search)
-	assert.Equal(t, engine.Label, "Yahoo")
+	assert.Equal(t, engine.Label, "Yahoo!")
 	assert.True(t, strings.Contains(engine.Query, "rengøring"))
 	assert.Equal(t, engine.Query, `vinduespudsning myshopify rengøring mkobetic`)
 }
@@ -165,7 +165,7 @@ func ExampleParse() {
 		}
 	}
 	// Output:
-	// Search Yahoo: hello
+	// Search Yahoo!: hello
 	// Social Twitter
 	// Indirect: http://yoursite.com/links
 }
