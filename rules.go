@@ -11,27 +11,19 @@ const (
 )
 
 type SearchRule struct {
-	LabelRule
-	DomainRule
+	Label      string
+	Domain     string
 	Parameters []string
 }
 
 type SocialRule struct {
-	LabelRule
-	DomainRule
+	Label  string
+	Domain string
 }
 
 type EmailRule struct {
-	LabelRule
-	DomainRule
-}
-
-type LabelRule struct {
-	Label string // label of the matched rule.
-}
-
-type DomainRule struct {
-	Domain string // list of domains to match against
+	Label  string
+	Domain string
 }
 
 func readRules(rulesPath string) (map[string]SearchRule, map[string]SocialRule, map[string]EmailRule, error) {
@@ -50,16 +42,14 @@ func mappedSearchRules(rawRules map[string]interface{}) map[string]SearchRule {
 	mappedRules := make(map[string]SearchRule)
 	for label, rawRule := range rawRules {
 		for _, domain := range rawRule.(map[string]interface{})["domains"].([]interface{}) {
-			rule := new(SearchRule)
-			rule.Label = label
-			rule.Domain = domain.(string)
+			rule := SearchRule{Label: label, Domain: domain.(string)}
 			rawParams := rawRule.(map[string]interface{})["parameters"].([]interface{})
 			params := make([]string, len(rawParams))
 			for _, param := range rawParams {
 				params = append(params, param.(string))
 			}
 			rule.Parameters = params
-			mappedRules[rule.Domain] = *rule
+			mappedRules[rule.Domain] = rule
 		}
 	}
 	return mappedRules
@@ -69,10 +59,7 @@ func mappedSocialRules(rawRules map[string]interface{}) map[string]SocialRule {
 	mappedRules := make(map[string]SocialRule)
 	for label, rawRule := range rawRules {
 		for _, domain := range rawRule.(map[string]interface{})["domains"].([]interface{}) {
-			rule := new(SocialRule)
-			rule.Label = label
-			rule.Domain = domain.(string)
-			mappedRules[rule.Domain] = *rule
+			mappedRules[domain.(string)] = SocialRule{Label: label, Domain: domain.(string)}
 		}
 	}
 	return mappedRules
@@ -82,10 +69,7 @@ func mappedEmailRules(rawRules map[string]interface{}) map[string]EmailRule {
 	mappedRules := make(map[string]EmailRule)
 	for label, rawRule := range rawRules {
 		for _, domain := range rawRule.(map[string]interface{})["domains"].([]interface{}) {
-			rule := new(EmailRule)
-			rule.Label = label
-			rule.Domain = domain.(string)
-			mappedRules[rule.Domain] = *rule
+			mappedRules[domain.(string)] = EmailRule{Label: label, Domain: domain.(string)}
 		}
 	}
 	return mappedRules
