@@ -1,13 +1,16 @@
 package referrer
 
 import (
+	"bufio"
 	"encoding/json"
 	"io/ioutil"
+	"strings"
 )
 
 const (
-	DataDir       = "./data"
-	RulesFilename = "referrers.json"
+	DataDir         = "./data"
+	RulesFilename   = "referrers.json"
+	EnginesFilename = "search.csv"
 )
 
 type SearchRule struct {
@@ -24,6 +27,20 @@ type SocialRule struct {
 type EmailRule struct {
 	Label  string
 	Domain string
+}
+
+// InitRules can be used to load custom definitions of social sites and search engines
+func InitRules(rulesPath string) error {
+	var err error
+	SearchRules, SocialRules, EmailRules, err = readRules(rulesPath)
+	return err
+}
+
+// InitSearchEngines can be used to load custom definitions of search engines for fuzzy matching
+func InitSearchEngines(enginesPath string) error {
+	var err error
+	SearchEngines, err = readSearchEngines(enginesPath)
+	return err
 }
 
 func readRules(rulesPath string) (map[string]SearchRule, map[string]SocialRule, map[string]EmailRule, error) {
@@ -73,4 +90,22 @@ func mappedEmailRules(rawRules map[string]interface{}) map[string]EmailRule {
 		}
 	}
 	return mappedRules
+}
+
+func readSearchEngines(enginesPath string) (map[string]SearchRule, error) {
+	enginesCsv, err := ioutil.ReadFile(enginesPath)
+	if err != nil {
+		return nil, err
+	}
+	engines := make(map[string]SearchRule)
+	scanner := bufio.NewScanner(strings.NewReader(string(enginesCsv)))
+	for scanner.Scan() {
+		line := strings.Trim(scanner.Text(), " \n\r\t")
+		if line != "" && line[0] != '#' {
+			tokens := strings.Split(line, ":")
+			params := strings.Split(tokens[2], ",")
+			engines[tokens[1]] = SearchRule{Label: tokens[0], Domain: tokens[1], Parameters: params}
+		}
+	}
+	return engines, nil
 }

@@ -5,14 +5,16 @@ import (
 	"net/url"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 )
 
 var (
-	SearchRules map[string]SearchRule // domain mapping of known rules for search engines.
-	SocialRules map[string]SocialRule // domain mapping of known rules for social sites.
-	EmailRules  map[string]EmailRule  // domain mapping of known rules for email sites.
-	once        sync.Once
+	SearchRules   map[string]SearchRule // domain mapping of known rules for search engines.
+	SocialRules   map[string]SocialRule // domain mapping of known rules for social sites.
+	EmailRules    map[string]EmailRule  // domain mapping of known rules for email sites.
+	SearchEngines map[string]SearchRule // list of search engines used for fuzzy matching
+	once          sync.Once
 )
 
 // Indirect is a referrer that doesn't match any of the other referrer types.
@@ -55,18 +57,16 @@ func init() {
 	_, filename, _, _ := runtime.Caller(1)
 	once.Do(func() {
 		rulesPath := path.Join(path.Dir(filename), path.Join(DataDir, RulesFilename))
-		err := Init(rulesPath)
+		err := InitRules(rulesPath)
+		if err != nil {
+			panic(err)
+		}
+		enginesPath := path.Join(path.Dir(filename), path.Join(DataDir, EnginesFilename))
+		err = InitSearchEngines(enginesPath)
 		if err != nil {
 			panic(err)
 		}
 	})
-}
-
-// Init can be used to load custom definitions of social sites and search engines
-func Init(rulesPath string) error {
-	var err error
-	SearchRules, SocialRules, EmailRules, err = readRules(rulesPath)
-	return err
 }
 
 // Parse takes a URL string and turns it into one of the supported referrer types.
@@ -129,6 +129,14 @@ func parse(u string, refUrl *url.URL, directDomains []string) (interface{}, erro
 		return engine, nil
 	}
 
+	engine, err = fuzzyParseSearch(refUrl)
+	if err != nil {
+		return nil, err
+	}
+	if engine != nil {
+		return engine, nil
+	}
+
 	// Parse and return as indirect referrer.
 	return &Indirect{Url: u, Domain: refUrl.Host}, nil
 }
@@ -170,6 +178,21 @@ func parseSearch(rawUrl string, u *url.URL) (*Search, error) {
 		for _, param := range rule.Parameters {
 			if query := query.Get(param); query != "" {
 				return &Search{Url: rawUrl, Domain: rule.Domain, Label: rule.Label, Query: query}, nil
+			}
+		}
+	}
+	return nil, nil
+}
+
+func fuzzyParseSearch(u *url.URL) (*Search, error) {
+	hostParts := strings.Split(u.Host, ".")
+	query := u.Query()
+	for _, hostPart := range hostParts {
+		if engine, present := SearchEngines[hostPart]; present {
+			for _, param := range engine.Parameters {
+				if search, ok := query[param]; ok && search[0] != "" {
+					return &Search{Label: engine.Label, Query: search[0], Domain: u.Host}, nil
+				}
 			}
 		}
 	}
