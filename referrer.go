@@ -94,47 +94,32 @@ func parse(u string, refUrl *url.URL, directDomains []string) (interface{}, erro
 	// Parse as direct url
 	if directDomains != nil {
 		direct, err := parseDirect(u, refUrl, directDomains)
-		if err != nil {
-			return nil, err
-		}
-		if direct != nil {
-			return direct, nil
+		if !(err == nil && direct == nil) {
+			return direct, err
 		}
 	}
 
 	// Parse as email referrer.
 	email, err := parseEmail(u, refUrl)
-	if err != nil {
-		return nil, err
-	}
-	if email != nil {
-		return email, nil
+	if !(err == nil && email == nil) {
+		return email, err
 	}
 
 	// Parse as social referrer.
 	social, err := parseSocial(u, refUrl)
-	if err != nil {
-		return nil, err
-	}
-	if social != nil {
-		return social, nil
+	if !(err == nil && social == nil) {
+		return social, err
 	}
 
 	// Parse as search referrer.
 	engine, err := parseSearch(u, refUrl)
-	if err != nil {
-		return nil, err
-	}
-	if engine != nil {
-		return engine, nil
+	if !(err == nil && engine == nil) {
+		return engine, err
 	}
 
 	engine, err = fuzzyParseSearch(refUrl)
-	if err != nil {
-		return nil, err
-	}
-	if engine != nil {
-		return engine, nil
+	if !(err == nil && engine == nil) {
+		return engine, err
 	}
 
 	// Parse and return as indirect referrer.
