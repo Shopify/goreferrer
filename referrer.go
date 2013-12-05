@@ -93,33 +93,28 @@ func parse(u string, refUrl *url.URL, directDomains []string) (interface{}, erro
 
 	// Parse as direct url
 	if directDomains != nil {
-		direct, err := parseDirect(u, refUrl, directDomains)
-		if !(err == nil && direct == nil) {
-			return direct, err
+		if direct := parseDirect(u, refUrl, directDomains); direct != nil {
+			return direct, nil
 		}
 	}
 
 	// Parse as email referrer.
-	email, err := parseEmail(u, refUrl)
-	if !(err == nil && email == nil) {
-		return email, err
+	if email := parseEmail(u, refUrl); email != nil {
+		return email, nil
 	}
 
 	// Parse as social referrer.
-	social, err := parseSocial(u, refUrl)
-	if !(err == nil && social == nil) {
-		return social, err
+	if social := parseSocial(u, refUrl); social != nil {
+		return social, nil
 	}
 
 	// Parse as search referrer.
-	engine, err := parseSearch(u, refUrl)
-	if !(err == nil && engine == nil) {
-		return engine, err
+	if engine := parseSearch(u, refUrl); engine != nil {
+		return engine, nil
 	}
 
-	engine, err = fuzzyParseSearch(refUrl)
-	if !(err == nil && engine == nil) {
-		return engine, err
+	if engine := fuzzyParseSearch(refUrl); engine != nil {
+		return engine, nil
 	}
 
 	// Parse and return as indirect referrer.
@@ -134,52 +129,52 @@ func parseURL(u string) (*url.URL, error) {
 	return refURL, nil
 }
 
-func parseDirect(rawUrl string, u *url.URL, directDomains []string) (*Direct, error) {
+func parseDirect(rawUrl string, u *url.URL, directDomains []string) *Direct {
 	for _, host := range directDomains {
 		if host == u.Host {
-			return &Direct{Url: rawUrl, Domain: u.Host}, nil
+			return &Direct{Url: rawUrl, Domain: u.Host}
 		}
 	}
-	return nil, nil
+	return nil
 }
 
-func parseSocial(rawUrl string, u *url.URL) (*Social, error) {
+func parseSocial(rawUrl string, u *url.URL) *Social {
 	if rule, ok := SocialRules[u.Host]; ok {
-		return &Social{Url: rawUrl, Domain: rule.Domain, Label: rule.Label}, nil
+		return &Social{Url: rawUrl, Domain: rule.Domain, Label: rule.Label}
 	}
-	return nil, nil
+	return nil
 }
 
-func parseEmail(rawUrl string, u *url.URL) (*Email, error) {
+func parseEmail(rawUrl string, u *url.URL) *Email {
 	if rule, ok := EmailRules[u.Host]; ok {
-		return &Email{Url: rawUrl, Domain: rule.Domain, Label: rule.Label}, nil
+		return &Email{Url: rawUrl, Domain: rule.Domain, Label: rule.Label}
 	}
-	return nil, nil
+	return nil
 }
 
-func parseSearch(rawUrl string, u *url.URL) (*Search, error) {
+func parseSearch(rawUrl string, u *url.URL) *Search {
 	query := u.Query()
 	if rule, ok := SearchRules[u.Host]; ok {
 		for _, param := range rule.Parameters {
 			if query := query.Get(param); query != "" {
-				return &Search{Url: rawUrl, Domain: rule.Domain, Label: rule.Label, Query: query}, nil
+				return &Search{Url: rawUrl, Domain: rule.Domain, Label: rule.Label, Query: query}
 			}
 		}
 	}
-	return nil, nil
+	return nil
 }
 
-func fuzzyParseSearch(u *url.URL) (*Search, error) {
+func fuzzyParseSearch(u *url.URL) *Search {
 	hostParts := strings.Split(u.Host, ".")
 	query := u.Query()
 	for _, hostPart := range hostParts {
 		if engine, present := SearchEngines[hostPart]; present {
 			for _, param := range engine.Parameters {
 				if search, ok := query[param]; ok && search[0] != "" {
-					return &Search{Label: engine.Label, Query: search[0], Domain: u.Host}, nil
+					return &Search{Label: engine.Label, Query: search[0], Domain: u.Host}
 				}
 			}
 		}
 	}
-	return nil, nil
+	return nil
 }
