@@ -21,6 +21,7 @@ func TestNotSearchDirectOrSocial(t *testing.T) {
 	r, err := Parse(url)
 	assert.NoError(t, err)
 	assert.Equal(t, url, r.(*Indirect).URL)
+	assert.Equal(t, r.(*Indirect).Domain, "unicorns.ca")
 }
 
 func TestSearchSimple(t *testing.T) {
@@ -28,10 +29,11 @@ func TestSearchSimple(t *testing.T) {
 	assert.NoError(t, err)
 	switch r := r.(type) {
 	case *Search:
-		assert.Equal(t, r.Label, "Yahoo")
+		assert.Equal(t, r.Label, "Yahoo!")
+		assert.Equal(t, r.Domain, "ca.search.yahoo.com")
 		assert.Equal(t, r.Query, "hello")
 	default:
-		assert.Fail(t, "Wrong referrer result!")
+		assert.Fail(t, fmt.Sprintf("Wrong referrer result: %+v", r))
 	}
 }
 
@@ -41,6 +43,7 @@ func TestSearchBingNotLive(t *testing.T) {
 	switch r := r.(type) {
 	case *Search:
 		assert.Equal(t, r.Label, "Bing")
+		assert.Equal(t, r.Domain, "bing.com")
 		assert.Equal(t, r.Query, "blargh")
 	default:
 		assert.Fail(t, "Wrong referrer result!")
@@ -55,7 +58,8 @@ func TestSearchNonAscii(t *testing.T) {
 	assert.NoError(t, err)
 
 	engine := r.(*Search)
-	assert.Equal(t, engine.Label, "Yahoo")
+	assert.Equal(t, engine.Label, "Yahoo!")
+	assert.Equal(t, engine.Domain, "ca.search.yahoo.com")
 	assert.True(t, strings.Contains(engine.Query, "\u00F8"))
 	assert.Equal(t, engine.Query, "vinduespudsning myshopify rengøring mkobetic")
 }
@@ -67,7 +71,8 @@ func TestSearchWithExplicitPlus(t *testing.T) {
 	assert.NoError(t, err)
 
 	engine := r.(*Search)
-	assert.Equal(t, engine.Label, "Yahoo")
+	assert.Equal(t, engine.Label, "Yahoo!")
+	assert.Equal(t, engine.Domain, "ca.search.yahoo.com")
 	assert.True(t, strings.Contains(engine.Query, "11 + 11"))
 	assert.Equal(t, engine.Query, `vinduespudsning JOKAPOLAR "11 + 11" mkobetic`)
 }
@@ -79,7 +84,8 @@ func TestSearchWithNonAscii(t *testing.T) {
 	assert.NoError(t, err)
 
 	engine := r.(*Search)
-	assert.Equal(t, engine.Label, "Yahoo")
+	assert.Equal(t, engine.Label, "Yahoo!")
+	assert.Equal(t, engine.Domain, "ca.search.yahoo.com")
 	assert.True(t, strings.Contains(engine.Query, "rengøring"))
 	assert.Equal(t, engine.Query, `vinduespudsning myshopify rengøring mkobetic`)
 }
@@ -92,6 +98,7 @@ func TestSearchWithCyrillics(t *testing.T) {
 
 	engine := r.(*Search)
 	assert.Equal(t, engine.Label, "Yandex")
+	assert.Equal(t, engine.Domain, "www.yandex.com")
 	assert.True(t, strings.Contains(engine.Query, "ботинки"))
 	assert.Equal(t, engine.Query, `ботинки packer-shoes`)
 }
@@ -127,6 +134,19 @@ func TestSocialSimple(t *testing.T) {
 	social := r.(*Social)
 	assert.NotNil(t, social)
 	assert.Equal(t, social.Label, "Twitter")
+	assert.Equal(t, social.Domain, "twitter.com")
+}
+
+func TestEmailSimple(t *testing.T) {
+	url := "https://mail.google.com/9aifaufasodf8usafd"
+
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	email := r.(*Email)
+	assert.NotNil(t, email)
+	assert.Equal(t, email.Label, "Gmail")
+	assert.Equal(t, email.Domain, "mail.google.com")
 }
 
 func ExampleParseWithDirect() {
@@ -165,7 +185,7 @@ func ExampleParse() {
 		}
 	}
 	// Output:
-	// Search Yahoo: hello
+	// Search Yahoo!: hello
 	// Social Twitter
 	// Indirect: http://yoursite.com/links
 }

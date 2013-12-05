@@ -1,8 +1,8 @@
 # label:domain:query-keys
-AOL:aol:query,encquery,q
+AOL:aol,aolsvc:query,encquery,q
 About:about:terms
 Alice:alice:qs
-Alltheweb:alltheweb:q
+AllTheWeb:alltheweb:q
 Altavista:altavista:q
 Ask:ask:q
 Baidu:baidu:wd
@@ -20,7 +20,7 @@ Mamma:mamma:query
 Mynet:mynet:q
 Najdi:najdi:q
 Naver:naver:query
-Netscape:netscape:query
+Netscape:netscape:query,q
 O*NET:onetcenter:qt
 Ozu:ozu:q
 PCHome:pchome:q
@@ -33,6 +33,6 @@ Terra:terra:query
 Virgilio:virgilio:qs
 Voila:voila:rdata
 Wirtulana Polska:wp:szukaj
-Yahoo:yahoo:p
+Yahoo!:yahoo:p
 Yam:yam:k
 Yandex:yandex:text
