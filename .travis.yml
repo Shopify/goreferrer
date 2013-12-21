@@ -6,4 +6,4 @@ script:
  - go test -v
 notifications:
   flowdock:
-    secure: "gWuA+aO++JwqMD6prmIhOMjXseqYRG21N7K6fYiCH9DQ7tIBwSbKSumDpZZu4VJImwusJIJZV5FAyQ2geCxxegqNEql/dOwk8aUUQgqHOljdoP+TLKNkv6Gt46UIZcU/tpjNAYIC5GIj1/SBmsEs7FLkKjs3HOJou/tuXD4nlP4="
+    secure: "RkB6iKg5+MUp1XXop60ZYqH/5/ZETI9Z6AFNbbWijs5kP0bCRUU6hgCD53aueiwrgLftVAMPeO+eWtnRKOiiGJ8n7hHJAWHcdl2AyVJLrOP4c6/7dd9dKH5U2s+VZkqeiF4m973ZBd7YV14T0N31UQu73UWUU95LIEt+wrkwz04="
