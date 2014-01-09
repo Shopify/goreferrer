@@ -37,6 +37,19 @@ func TestSearchSimple(t *testing.T) {
 	}
 }
 
+func TestSearchSimpleWithQueryInFragment(t *testing.T) {
+	r, err := Parse("http://ca.search.yahoo.com/search#p=hello")
+	assert.NoError(t, err)
+	switch r := r.(type) {
+	case *Search:
+		assert.Equal(t, r.Label, "Yahoo!")
+		assert.Equal(t, r.Domain, "ca.search.yahoo.com")
+		assert.Equal(t, r.Query, "hello")
+	default:
+		assert.Fail(t, fmt.Sprintf("Wrong referrer result: %+v", r))
+	}
+}
+
 func TestSearchBingNotLive(t *testing.T) {
 	r, err := Parse("http://bing.com/?q=blargh")
 	assert.NoError(t, err)

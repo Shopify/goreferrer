@@ -166,7 +166,13 @@ func parseSearch(rawUrl string, u *url.URL) *Search {
 
 func fuzzyParseSearch(u *url.URL) *Search {
 	hostParts := strings.Split(u.Host, ".")
-	query := u.Query()
+	query, _ := url.ParseQuery(u.Fragment)
+	if query == nil {
+		query = make(url.Values)
+	}
+	for key, values := range u.Query() {
+		query[key] = values
+	}
 	for _, hostPart := range hostParts {
 		if engine, present := SearchEngines[hostPart]; present {
 			for _, param := range engine.Parameters {
