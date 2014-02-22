@@ -122,8 +122,10 @@ func TestSearchSiteWithEmptyQuery(t *testing.T) {
 	r, err := Parse(url)
 	assert.NoError(t, err)
 
-	_, ok := r.(*Indirect)
-	assert.True(t, ok)
+	engine := r.(*Search)
+	assert.Equal(t, engine.Label, "Google")
+	assert.Equal(t, engine.Domain, "www.google.co.in")
+	assert.Equal(t, engine.Query, "")
 }
 
 func TestDirectSimple(t *testing.T) {
