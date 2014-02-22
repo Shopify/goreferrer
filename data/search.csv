@@ -11,7 +11,7 @@ CNN:cnn:query
 Daum:daum:q
 Ekolay:ekolay:q
 Eniro:eniro:search_word
-Google:google:q
+Google:google:q,*
 Kvasir:kvasir:q
 #Live:bing:q # duplicate of Bing:bing:q
 Lycos:lycos:query

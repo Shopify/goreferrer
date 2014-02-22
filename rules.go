@@ -8,9 +8,10 @@ import (
 )
 
 const (
-	DataDir         = "./data"
-	RulesFilename   = "referrers.json"
-	EnginesFilename = "search.csv"
+	DataDir           = "./data"
+	RulesFilename     = "referrers.json"
+	EnginesFilename   = "search.csv"
+	ParameterWildcard = "*"
 )
 
 type SearchRule struct {

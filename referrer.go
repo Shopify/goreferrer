@@ -156,8 +156,11 @@ func parseSearch(rawUrl string, u *url.URL) *Search {
 	query := u.Query()
 	if rule, ok := SearchRules[u.Host]; ok {
 		for _, param := range rule.Parameters {
-			if _, present := query[param]; present {
-				return &Search{URL: rawUrl, Domain: rule.Domain, Label: rule.Label, Query: query.Get(param)}
+			if param == ParameterWildcard {
+				return &Search{URL: rawUrl, Domain: rule.Domain, Label: rule.Label, Query: ""}
+			}
+			if query := query.Get(param); query != "" {
+				return &Search{URL: rawUrl, Domain: rule.Domain, Label: rule.Label, Query: query}
 			}
 		}
 	}
@@ -176,7 +179,10 @@ func fuzzyParseSearch(u *url.URL) *Search {
 	for _, hostPart := range hostParts {
 		if engine, present := SearchEngines[hostPart]; present {
 			for _, param := range engine.Parameters {
-				if search, ok := query[param]; ok {
+				if param == ParameterWildcard {
+					return &Search{Label: engine.Label, Query: "", Domain: u.Host}
+				}
+				if search, ok := query[param]; ok && search[0] != "" {
 					return &Search{Label: engine.Label, Query: search[0], Domain: u.Host}
 				}
 			}

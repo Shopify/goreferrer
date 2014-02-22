@@ -1086,7 +1086,8 @@
             "parameters": [
                 "q",
                 "query",
-                "Keywords"
+                "Keywords",
+                "*"
             ]
         },
         "Google Blogsearch": {
