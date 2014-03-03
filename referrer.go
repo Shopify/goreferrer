@@ -153,14 +153,21 @@ func parseEmail(rawUrl string, u *url.URL) *Email {
 }
 
 func parseSearch(rawUrl string, u *url.URL) *Search {
-	query := u.Query()
+	query, _ := url.ParseQuery(u.Fragment)
+	if query == nil {
+		query = make(url.Values)
+	}
+	for key, values := range u.Query() {
+		query[key] = values
+	}
+
 	if rule, ok := SearchRules[u.Host]; ok {
 		for _, param := range rule.Parameters {
 			if param == ParameterWildcard {
 				return &Search{URL: rawUrl, Domain: rule.Domain, Label: rule.Label, Query: ""}
 			}
-			if query := query.Get(param); query != "" {
-				return &Search{URL: rawUrl, Domain: rule.Domain, Label: rule.Label, Query: query}
+			if search, ok := query[param]; ok {
+				return &Search{URL: rawUrl, Domain: rule.Domain, Label: rule.Label, Query: search[0]}
 			}
 		}
 	}
@@ -169,6 +176,7 @@ func parseSearch(rawUrl string, u *url.URL) *Search {
 
 func fuzzyParseSearch(u *url.URL) *Search {
 	hostParts := strings.Split(u.Host, ".")
+
 	query, _ := url.ParseQuery(u.Fragment)
 	if query == nil {
 		query = make(url.Values)
@@ -176,13 +184,14 @@ func fuzzyParseSearch(u *url.URL) *Search {
 	for key, values := range u.Query() {
 		query[key] = values
 	}
+
 	for _, hostPart := range hostParts {
 		if engine, present := SearchEngines[hostPart]; present {
 			for _, param := range engine.Parameters {
 				if param == ParameterWildcard {
 					return &Search{Label: engine.Label, Query: "", Domain: u.Host}
 				}
-				if search, ok := query[param]; ok && search[0] != "" {
+				if search, ok := query[param]; ok {
 					return &Search{Label: engine.Label, Query: search[0], Domain: u.Host}
 				}
 			}

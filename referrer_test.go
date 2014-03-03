@@ -117,14 +117,14 @@ func TestSearchWithCyrillics(t *testing.T) {
 }
 
 func TestSearchSiteWithEmptyQuery(t *testing.T) {
-	url := `https://www.yahoo.com?sa=t&rct=j&p=&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk`
+	url := `https://www.yahoo.com?p=&sa=t&rct=j&p=&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk`
 
 	r, err := Parse(url)
 	assert.NoError(t, err)
 
 	engine := r.(*Search)
-	assert.Equal(t, engine.Label, "Google")
-	assert.Equal(t, engine.Domain, "www.google.co.in")
+	assert.Equal(t, engine.Label, "Yahoo!")
+	assert.Equal(t, engine.Domain, "www.yahoo.com")
 	assert.Equal(t, engine.Query, "")
 }
 
