@@ -176,6 +176,50 @@ func TestSocialSimple(t *testing.T) {
 	assert.Equal(t, social.Domain, "twitter.com")
 }
 
+func TestSocialGooglePlus(t *testing.T) {
+	url := "http://plus.url.google.com/url?sa=z&n=1394219098538&url=http%3A%2F%2Fjoe.blogspot.ca&usg=jo2tEVIcI5Wh-6t--v-1ODEeGG8."
+
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	social := r.(*Social)
+	assert.NotNil(t, social)
+	assert.Equal(t, social.Label, "Google+")
+	assert.Equal(t, social.Domain, "plus.url.google.com")
+}
+
+func TestSocialWithPrefixWWW(t *testing.T) {
+	url := "https://www.facebook.com/"
+
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	social, ok := r.(*Social)
+	if !ok {
+		assert.Fail(t, "Expected Social", "Instead got %#v", r)
+		return
+	}
+	assert.NotNil(t, social)
+	assert.Equal(t, social.Label, "Facebook")
+	assert.Equal(t, social.Domain, "www.facebook.com")
+}
+
+func TestSocialWithPrefixM(t *testing.T) {
+	url := "https://m.facebook.com/"
+
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	social, ok := r.(*Social)
+	if !ok {
+		assert.Fail(t, "Expected Social", "Instead got %#v", r)
+		return
+	}
+	assert.NotNil(t, social)
+	assert.Equal(t, social.Label, "Facebook")
+	assert.Equal(t, social.Domain, "m.facebook.com")
+}
+
 func TestEmailSimple(t *testing.T) {
 	url := "https://mail.google.com/9aifaufasodf8usafd"
 
