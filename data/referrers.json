@@ -3563,7 +3563,8 @@
         "Google+": {
             "domains": [
                 "url.google.com",
-                "plus.google.com"
+                "plus.google.com",
+                "plus.url.google.com"
             ]
         },
         "Habbo": {
