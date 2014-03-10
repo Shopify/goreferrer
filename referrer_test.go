@@ -232,26 +232,6 @@ func TestEmailSimple(t *testing.T) {
 	assert.Equal(t, email.Domain, "mail.google.com")
 }
 
-func TestCampaign(t *testing.T) {
-	url := "http://www.example.com/?utm_campaign=spring&utm_medium=referral&utm_source=exampleblog"
-
-	r, err := Parse(url)
-	assert.NoError(t, err)
-
-	campaign, ok := r.(*Campaign)
-	if !ok {
-		assert.Fail(t, "Expected Campaign", "Got %#v", r)
-		return
-	}
-	assert.NotNil(t, campaign)
-	assert.Equal(t, campaign.Source, "exampleblog")
-	assert.Equal(t, campaign.Domain, "www.example.com")
-	assert.Equal(t, campaign.Medium, "referral")
-	assert.Equal(t, campaign.Name, "spring")
-	assert.Equal(t, campaign.Term, "")
-	assert.Equal(t, campaign.Content, "")
-}
-
 func ExampleParseWithDirect() {
 	r, err := ParseWithDirect("http://mysite2.com/products/ties", "mysite1.com", "mysite2.com")
 	if err != nil {
