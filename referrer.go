@@ -53,6 +53,16 @@ type Email struct {
 	Label  string // email site label, e.g. Gmail
 }
 
+// Campaign is a referrer from advertising campaigns (indicated by presence of utm fields).
+type Campaign struct {
+	Source  string // identifies the advertiser, site, publication
+	Domain  string // the referrer domain, e.g. mail.google.com.com
+	Medium  string // the advertising or marketing medium, e.g.: cpc, referral, email
+	Name    string // the individual campaign name, slogan, promo code, etc. for a product
+	Term    string // identifies paid search keywords
+	Content string // used to differentiate similar content, or links within the same ad
+}
+
 func init() {
 	_, filename, _, _ := runtime.Caller(1)
 	once.Do(func() {
@@ -98,6 +108,11 @@ func parse(u string, refURL *url.URL, directDomains []string) (interface{}, erro
 		}
 	}
 
+	// Parse as campaign referrer.
+	if campaign := parseCampaign(u, refURL); campaign != nil {
+		return campaign, nil
+	}
+
 	// Parse as email referrer.
 	if email := parseEmail(u, refURL); email != nil {
 		return email, nil
@@ -136,6 +151,36 @@ func parseDirect(rawUrl string, u *url.URL, directDomains []string) *Direct {
 		}
 	}
 	return nil
+}
+
+func parseCampaign(rawUrl string, u *url.URL) *Campaign {
+	campaign := Campaign{}
+	isCampaign := false
+	for key, values := range u.Query() {
+		switch key {
+		case "utm_source":
+			isCampaign = true
+			campaign.Source = values[0]
+		case "utm_medium":
+			isCampaign = true
+			campaign.Medium = values[0]
+		case "utm_campaign":
+			isCampaign = true
+			campaign.Name = values[0]
+		case "utm_term":
+			isCampaign = true
+			campaign.Term = values[0]
+		case "utm_content":
+			isCampaign = true
+			campaign.Content = values[0]
+		}
+	}
+	if isCampaign {
+		campaign.Domain = u.Host
+		return &campaign
+	} else {
+		return nil
+	}
 }
 
 func parseSocial(rawUrl string, u *url.URL) *Social {
