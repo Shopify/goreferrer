@@ -252,26 +252,6 @@ func TestCampaign(t *testing.T) {
 	assert.Equal(t, campaign.Content, "")
 }
 
-func TestCampaign2(t *testing.T) {
-	url := "http://www.example.com/?utm_campaign=spring+collection&utm_medium=email&utm_source=newsletter1&utm_content=toplink"
-
-	r, err := Parse(url)
-	assert.NoError(t, err)
-
-	campaign, ok := r.(*Campaign)
-	if !ok {
-		assert.Fail(t, "Expected Campaign", "Got %#v", r)
-		return
-	}
-	assert.NotNil(t, campaign)
-	assert.Equal(t, campaign.Source, "newsletter1")
-	assert.Equal(t, campaign.Domain, "www.example.com")
-	assert.Equal(t, campaign.Medium, "email")
-	assert.Equal(t, campaign.Name, "spring collection")
-	assert.Equal(t, campaign.Term, "")
-	assert.Equal(t, campaign.Content, "toplink")
-}
-
 func ExampleParseWithDirect() {
 	r, err := ParseWithDirect("http://mysite2.com/products/ties", "mysite1.com", "mysite2.com")
 	if err != nil {
