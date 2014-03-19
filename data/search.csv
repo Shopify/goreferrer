@@ -9,6 +9,7 @@ Baidu:baidu:wd
 Bing:bing:q
 CNN:cnn:query
 Daum:daum:q
+DuckDuckGo:duckduckgo:q,*
 Ekolay:ekolay:q
 Eniro:eniro:search_word
 Google:google:q,*
@@ -33,6 +34,6 @@ Terra:terra:query
 Virgilio:virgilio:qs
 Voila:voila:rdata
 Wirtulana Polska:wp:szukaj
-Yahoo!:yahoo:p
+Yahoo!:yahoo:p,*
 Yam:yam:k
 Yandex:yandex:text
