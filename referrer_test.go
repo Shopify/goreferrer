@@ -152,6 +152,30 @@ func TestSearchSiteGoogleWithQuery(t *testing.T) {
 	assert.Equal(t, engine.Query, "test")
 }
 
+func TestSearchSiteDuckDuckGoSecured(t *testing.T) {
+	url := `http://r.duckduckgo.com/l/?kh=-1&amp;uddg=http%3A%2F%2Fwww.shopify.com%2F`
+
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	engine := r.(*Search)
+	assert.Equal(t, engine.Label, "DuckDuckGo")
+	assert.Equal(t, engine.Domain, "r.duckduckgo.com")
+	assert.Equal(t, engine.Query, "")
+}
+
+func TestSearchSiteYahooSecured(t *testing.T) {
+	url := `http://r.search.yahoo.com/_ylt=A0LEV0H.uiNTzEoA4UjBGOd_;_ylu=X3oDMTByMG04Z2o2BHNlYwNzcgRwb3MDMQRjb2xvA2JmMQR2dGlkAw--/RV=1/RE=1394936959/RO=10/RU=http%3a%2f%2fwww.shopify.com%2f/RS=^ADA0.VXK1194TBSbZf.fSErwtMSJrM-`
+
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	engine := r.(*Search)
+	assert.Equal(t, engine.Label, "Yahoo!")
+	assert.Equal(t, engine.Domain, "r.search.yahoo.com")
+	assert.Equal(t, engine.Query, "")
+}
+
 func TestDirectSimple(t *testing.T) {
 	url := "http://example.com"
 
@@ -174,6 +198,18 @@ func TestSocialSimple(t *testing.T) {
 	assert.NotNil(t, social)
 	assert.Equal(t, social.Label, "Twitter")
 	assert.Equal(t, social.Domain, "twitter.com")
+}
+
+func TestSocialLanguageDomain(t *testing.T) {
+	url := "http://es.reddit.com/r/foo"
+
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	social := r.(*Social)
+	assert.NotNil(t, social)
+	assert.Equal(t, social.Label, "Reddit")
+	assert.Equal(t, social.Domain, "reddit.com")
 }
 
 func TestSocialGooglePlus(t *testing.T) {

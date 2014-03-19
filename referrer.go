@@ -142,6 +142,16 @@ func parseSocial(rawUrl string, u *url.URL) *Social {
 	if rule, ok := SocialRules[u.Host]; ok {
 		return &Social{URL: rawUrl, Domain: rule.Domain, Label: rule.Label}
 	}
+
+	// Fuzzy search for things like es.reddit.com where the 2-letter locale is the subdomain
+	if len(u.Host) > 2 && u.Host[2] == '.' {
+		slicedHost := u.Host[3:]
+
+		if rule, ok := SocialRules[slicedHost]; ok {
+			return &Social{URL: rawUrl, Domain: rule.Domain, Label: rule.Label}
+		}
+	}
+
 	return nil
 }
 
