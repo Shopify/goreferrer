@@ -237,7 +237,7 @@ func TestSocialWithPrefixWWW(t *testing.T) {
 	}
 	assert.NotNil(t, social)
 	assert.Equal(t, social.Label, "Facebook")
-	assert.Equal(t, social.Domain, "www.facebook.com")
+	assert.Equal(t, social.Domain, "facebook.com")
 }
 
 func TestSocialWithPrefixM(t *testing.T) {
@@ -253,7 +253,7 @@ func TestSocialWithPrefixM(t *testing.T) {
 	}
 	assert.NotNil(t, social)
 	assert.Equal(t, social.Label, "Facebook")
-	assert.Equal(t, social.Domain, "m.facebook.com")
+	assert.Equal(t, social.Domain, "facebook.com")
 }
 
 func TestEmailSimple(t *testing.T) {

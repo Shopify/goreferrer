@@ -80,7 +80,7 @@ func mappedSocialRules(rawRules RuleSet) map[string]SocialRule {
 			mappedRules[domain] = SocialRule{Label: label, Domain: domain}
 			for _, prefix := range []string{"www.", "m."} {
 				variation := prefix + domain
-				mappedRules[variation] = SocialRule{Label: label, Domain: variation}
+				mappedRules[variation] = SocialRule{Label: label, Domain: domain}
 			}
 		}
 	}
