@@ -256,6 +256,38 @@ func TestSocialWithPrefixM(t *testing.T) {
 	assert.Equal(t, social.Domain, "facebook.com")
 }
 
+func TestSocialWithPrefixL(t *testing.T) {
+	url := "https://l.facebook.com/"
+
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	social, ok := r.(*Social)
+	if !ok {
+		assert.Fail(t, "Expected Social", "Instead got %#v", r)
+		return
+	}
+	assert.NotNil(t, social)
+	assert.Equal(t, social.Label, "Facebook")
+	assert.Equal(t, social.Domain, "facebook.com")
+}
+
+func TestSocialWithPrefixLM(t *testing.T) {
+	url := "https://lm.facebook.com/"
+
+	r, err := Parse(url)
+	assert.NoError(t, err)
+
+	social, ok := r.(*Social)
+	if !ok {
+		assert.Fail(t, "Expected Social", "Instead got %#v", r)
+		return
+	}
+	assert.NotNil(t, social)
+	assert.Equal(t, social.Label, "Facebook")
+	assert.Equal(t, social.Domain, "facebook.com")
+}
+
 func TestEmailSimple(t *testing.T) {
 	url := "https://mail.google.com/9aifaufasodf8usafd"
 
