@@ -44,3 +44,7 @@ A Go package that analyzes and classifies different kinds of referrer URLs (sear
 	Search Yahoo: hello
 	Social Twitter
 	Indirect: http://yoursite.com/links
+
+## License
+
+Copyright (c) 2012 Shopify. Released under the [MIT-LICENSE](http://opensource.org/licenses/MIT).
