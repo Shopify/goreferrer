@@ -33,7 +33,7 @@ func main() {
 		case *referrer.Social:
 			fmt.Printf("Social %s\n", r.Label)
 		case *referrer.Indirect:
-			fmt.Printf("Indirect: %s\n", r.Url)
+			fmt.Printf("Indirect: %s\n", r.URL)
 		}
 	}
 }
