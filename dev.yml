@@ -1,0 +1,9 @@
+name: goreferrer
+
+up:
+  - go: 1.6.2
+
+commands:
+  test:
+    run: go get -t ./... && go test ./...
+    desc: 'run unit tests'
