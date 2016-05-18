@@ -69,7 +69,7 @@ func TestMatchOnDomainAndTld(t *testing.T) {
 	assert.Equal(t, Search, rules.Parse("http://www.zambo.com/search?q=hello!").Type)
 }
 
-func TestSimpleEmail(t *testing.T) {
+func TestEmailSimple(t *testing.T) {
 	actual := DefaultRules.Parse("https://mail.google.com/9aifaufasodf8usafd")
 	expected := Referrer{
 		Type:      Email,
@@ -84,7 +84,7 @@ func TestSimpleEmail(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestSimpleSocial(t *testing.T) {
+func TestSocialSimple(t *testing.T) {
 	actual := DefaultRules.Parse("https://twitter.com/snormore/status/391149968360103936")
 	expected := Referrer{
 		Type:   Social,
@@ -108,6 +108,37 @@ func TestSocialSubdomain(t *testing.T) {
 		Subdomain: "puppyanimalbarn",
 		Domain:    "tumblr",
 		Tld:       "com",
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSocialGooglePlus(t *testing.T) {
+	actual := DefaultRules.Parse("http://plus.url.google.com/url?sa=z&n=1394219098538&url=http%3A%2F%2Fjoe.blogspot.ca&usg=jo2tEVIcI5Wh-6t--v-1ODEeGG8.")
+	expected := Referrer{
+		Type:      Social,
+		Label:     "Google+",
+		URL:       "http://plus.url.google.com/url?sa=z&n=1394219098538&url=http%3A%2F%2Fjoe.blogspot.ca&usg=jo2tEVIcI5Wh-6t--v-1ODEeGG8.",
+		Host:      "plus.url.google.com",
+		Subdomain: "plus.url",
+		Domain:    "google",
+		Tld:       "com",
+		Path:      "/url",
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchSimple(t *testing.T) {
+	actual := DefaultRules.Parse("http://search.yahoo.com/search?p=hello")
+	expected := Referrer{
+		Type:      Search,
+		Label:     "Yahoo!",
+		URL:       "http://search.yahoo.com/search?p=hello",
+		Host:      "search.yahoo.com",
+		Subdomain: "search",
+		Domain:    "yahoo",
+		Tld:       "com",
+		Path:      "/search",
+		Query:     "hello",
 	}
 	assert.Equal(t, expected, actual)
 }
