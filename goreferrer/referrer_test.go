@@ -142,3 +142,19 @@ func TestSearchSimple(t *testing.T) {
 	}
 	assert.Equal(t, expected, actual)
 }
+
+func TestSearchQueryInFragment(t *testing.T) {
+	actual := DefaultRules.Parse("http://search.yahoo.com/search#p=hello")
+	expected := Referrer{
+		Type:      Search,
+		Label:     "Yahoo!",
+		URL:       "http://search.yahoo.com/search#p=hello",
+		Host:      "search.yahoo.com",
+		Subdomain: "search",
+		Domain:    "yahoo",
+		Tld:       "com",
+		Path:      "/search",
+		Query:     "hello",
+	}
+	assert.Equal(t, expected, actual)
+}

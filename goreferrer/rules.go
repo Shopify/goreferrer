@@ -3,6 +3,7 @@ package goreferrer
 import (
 	"encoding/json"
 	"io"
+	"net/url"
 	"path"
 	"strings"
 )
@@ -88,11 +89,11 @@ func (r RuleSet) parseUrl(u *Url) Referrer {
 			continue
 		}
 
-		var query string
-		for _, param := range rule.Parameters {
-			query = u.Query().Get(param)
-			if query != "" {
-				break
+		query := getQuery(u.Query(), rule.Parameters)
+		if query == "" {
+			values, err := url.ParseQuery(u.Fragment)
+			if err == nil {
+				query = getQuery(values, rule.Parameters)
 			}
 		}
 
@@ -120,19 +121,15 @@ func (r RuleSet) parseUrl(u *Url) Referrer {
 	}
 }
 
-func extractRules(ruleMap map[string]jsonRule, Type ReferrerType) RuleSet {
-	rules := make(RuleSet)
-	for label, jsonRule := range ruleMap {
-		for _, domain := range jsonRule.Domains {
-			rules[domain] = Rule{
-				Type:       Type,
-				Label:      label,
-				Domain:     domain,
-				Parameters: jsonRule.Parameters,
-			}
+func getQuery(values url.Values, params []string) string {
+	for _, param := range params {
+		query := values.Get(param)
+		if query != "" {
+			return query
 		}
 	}
-	return rules
+
+	return ""
 }
 
 type jsonRule struct {
@@ -159,4 +156,19 @@ func LoadJsonRules(reader io.Reader) (RuleSet, error) {
 	rules.Merge(extractRules(decoded.Search, Search))
 	rules.Merge(extractRules(decoded.Social, Social))
 	return rules, nil
+}
+
+func extractRules(ruleMap map[string]jsonRule, Type ReferrerType) RuleSet {
+	rules := make(RuleSet)
+	for label, jsonRule := range ruleMap {
+		for _, domain := range jsonRule.Domains {
+			rules[domain] = Rule{
+				Type:       Type,
+				Label:      label,
+				Domain:     domain,
+				Parameters: jsonRule.Parameters,
+			}
+		}
+	}
+	return rules
 }
