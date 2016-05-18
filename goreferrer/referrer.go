@@ -3,11 +3,8 @@ package goreferrer
 import (
 	"encoding/json"
 	"io"
-	"net/url"
 	"path"
 	"strings"
-
-	"golang.org/x/net/publicsuffix"
 )
 
 type ReferrerType int
@@ -39,11 +36,15 @@ func (r ReferrerType) String() string {
 }
 
 type Referrer struct {
-	Type   ReferrerType
-	Label  string
-	URL    string
-	Domain string
-	Query  string
+	Type      ReferrerType
+	Label     string
+	URL       string
+	Host      string
+	Subdomain string
+	Domain    string
+	Tld       string
+	Path      string
+	Query     string
 }
 
 type Rule struct {
@@ -66,19 +67,18 @@ func (r RuleSet) Parse(URL string) Referrer {
 	if URL == "" {
 		return Referrer{
 			Type: Direct,
-			URL:  URL,
 		}
 	}
 
-	u, err := url.Parse(URL)
-	if err != nil || u.Host == "" {
+	u, ok := parseUrl(URL)
+	if !ok {
 		return Referrer{
 			Type: Invalid,
 			URL:  URL,
 		}
 	}
 
-	return r.ParseUrl(u)
+	return r.parseUrl(u)
 }
 
 func (r RuleSet) ParseWithDirect(URL string, domains ...string) Referrer {
@@ -86,12 +86,11 @@ func (r RuleSet) ParseWithDirect(URL string, domains ...string) Referrer {
 	if URL == "" {
 		return Referrer{
 			Type: Direct,
-			URL:  URL,
 		}
 	}
 
-	u, err := url.Parse(URL)
-	if err != nil || u.Host == "" {
+	u, ok := parseUrl(URL)
+	if !ok {
 		return Referrer{
 			Type: Invalid,
 			URL:  URL,
@@ -101,37 +100,32 @@ func (r RuleSet) ParseWithDirect(URL string, domains ...string) Referrer {
 	for _, domain := range domains {
 		if u.Host == domain {
 			return Referrer{
-				Type:   Direct,
-				URL:    URL,
-				Domain: domain,
+				Type:      Direct,
+				URL:       URL,
+				Host:      domain,
+				Subdomain: u.Subdomain,
+				Domain:    u.Domain,
+				Tld:       u.Tld,
+				Path:      u.Path,
 			}
 		}
 	}
 
-	return r.ParseUrl(u)
+	return r.parseUrl(u)
 }
 
-func (r RuleSet) ParseUrl(u *url.URL) Referrer {
-	tld, err := publicsuffix.EffectiveTLDPlusOne(u.Host)
-	if err != nil {
-		return Referrer{
-			Type:   Indirect,
-			URL:    u.String(),
-			Domain: u.Host,
-		}
-	}
-
+func (r RuleSet) parseUrl(u *Url) Referrer {
 	variations := []string{
 		path.Join(u.Host, u.Path),
-		path.Join(tld, u.Path),
+		path.Join(u.RegisteredDomain(), u.Path),
 		u.Host,
-		tld,
+		u.RegisteredDomain(),
 	}
 
 	for _, host := range variations {
 		rule, exists := r[host]
 		if !exists {
-			break
+			continue
 		}
 
 		var query string
@@ -143,18 +137,26 @@ func (r RuleSet) ParseUrl(u *url.URL) Referrer {
 		}
 
 		return Referrer{
-			Type:   rule.Type,
-			Label:  rule.Label,
-			URL:    u.String(),
-			Domain: u.Host,
-			Query:  query,
+			Type:      rule.Type,
+			Label:     rule.Label,
+			URL:       u.String(),
+			Host:      u.Host,
+			Subdomain: u.Subdomain,
+			Domain:    u.Domain,
+			Tld:       u.Tld,
+			Path:      u.Path,
+			Query:     query,
 		}
 	}
 
 	return Referrer{
-		Type:   Indirect,
-		URL:    u.String(),
-		Domain: u.Host,
+		Type:      Indirect,
+		URL:       u.String(),
+		Host:      u.Host,
+		Subdomain: u.Subdomain,
+		Domain:    u.Domain,
+		Tld:       u.Tld,
+		Path:      u.Path,
 	}
 }
 
