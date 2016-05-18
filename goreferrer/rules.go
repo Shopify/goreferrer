@@ -67,7 +67,7 @@ func (r RuleSet) ParseWithDirect(URL string, domains ...string) Referrer {
 				Subdomain: u.Subdomain,
 				Domain:    u.Domain,
 				Tld:       u.Tld,
-				Path:      u.Path,
+				Path:      cleanPath(u.Path),
 			}
 		}
 	}
@@ -97,7 +97,7 @@ func (r RuleSet) parseUrl(u *Url) Referrer {
 			}
 		}
 
-		return Referrer{
+		ref := Referrer{
 			Type:      rule.Type,
 			Label:     rule.Label,
 			URL:       u.String(),
@@ -105,9 +105,11 @@ func (r RuleSet) parseUrl(u *Url) Referrer {
 			Subdomain: u.Subdomain,
 			Domain:    u.Domain,
 			Tld:       u.Tld,
-			Path:      u.Path,
+			Path:      cleanPath(u.Path),
 			Query:     query,
 		}
+		ref.GoogleType = googleSearchType(ref)
+		return ref
 	}
 
 	return Referrer{
@@ -117,7 +119,7 @@ func (r RuleSet) parseUrl(u *Url) Referrer {
 		Subdomain: u.Subdomain,
 		Domain:    u.Domain,
 		Tld:       u.Tld,
-		Path:      u.Path,
+		Path:      cleanPath(u.Path),
 	}
 }
 
@@ -130,6 +132,25 @@ func getQuery(values url.Values, params []string) string {
 	}
 
 	return ""
+}
+
+func googleSearchType(ref Referrer) GoogleSearchType {
+	if ref.Type != Search || !strings.Contains(ref.Label, "Google") {
+		return NotGoogleSearch
+	}
+
+	if strings.HasPrefix(ref.Path, "/aclk") || strings.HasPrefix(ref.Path, "/pagead/aclk") {
+		return Adwords
+	}
+
+	return OrganicSearch
+}
+
+func cleanPath(path string) string {
+	if i := strings.Index(path, ";"); i != -1 {
+		return path[:i]
+	}
+	return path
 }
 
 type jsonRule struct {

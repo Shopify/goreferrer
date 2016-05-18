@@ -29,13 +29,33 @@ func (r ReferrerType) String() string {
 }
 
 type Referrer struct {
-	Type      ReferrerType
-	Label     string
-	URL       string
-	Host      string
-	Subdomain string
-	Domain    string
-	Tld       string
-	Path      string
-	Query     string
+	Type       ReferrerType
+	Label      string
+	URL        string
+	Host       string
+	Subdomain  string
+	Domain     string
+	Tld        string
+	Path       string
+	Query      string
+	GoogleType GoogleSearchType
+}
+
+type GoogleSearchType int
+
+const (
+	NotGoogleSearch GoogleSearchType = iota
+	OrganicSearch
+	Adwords
+)
+
+func (g GoogleSearchType) String() string {
+	switch g {
+	default:
+		return "not google search"
+	case OrganicSearch:
+		return "organic google search"
+	case Adwords:
+		return "google adwords referrer"
+	}
 }

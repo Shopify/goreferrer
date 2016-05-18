@@ -207,7 +207,6 @@ func TestSearchBindNotLive(t *testing.T) {
 }
 
 func TestSearchNonAscii(t *testing.T) {
-	t.Skip("Semicolons are reserved")
 	actual := DefaultRules.Parse("http://search.yahoo.com/search;_ylt=A0geu8fBeW5SqVEAZ2vrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDWmxUdFhVZ2V1eVVMYVp6c1VmRmRMUXUyMkxfbjJsSnVlY0VBQlhDWQRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANVRFRzSGFBUVF0ZUZHZ2hzZ0N3VDNBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgbXlzaG9waWZ5IHJlbmf4cmluZyBta29iZXRpYwR0X3N0bXADMTM4Mjk3MjM1NDIzMwR2dGVzdGlkA01TWUNBQzE-?p=vinduespudsning+myshopify+rengøring+mkobetic&fr2=sb-top&fr=yfp-t-715&rd=r1")
 	expected := Referrer{
 		Type:      Search,
@@ -249,8 +248,35 @@ func TestSearchWithExplicitPlus(t *testing.T) {
 		Subdomain: "search",
 		Domain:    "yahoo",
 		Tld:       "com",
-		Path:      "/search;_ylt=A0geu8nVvm5StDIAIxHrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDSjNTOW9rZ2V1eVVMYVp6c1VmRmRMUkdDMkxfbjJsSnV2dFVBQmZyWgRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANDc01MSGlnTVFOS2k2cDRqcUxERzRBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgSk9LQVBPTEFSICIxMSArIDExIiBta29iZXRpYwR0X3N0bXADMTM4Mjk4OTYwMjg3OQR2dGVzdGlkA01TWUNBQzE-",
+		Path:      "/search",
 		Query:     `vinduespudsning JOKAPOLAR "11 + 11" mkobetic`,
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchWithEmptyQuery(t *testing.T) {
+	actual := DefaultRules.Parse("https://yahoo.com?p=&sa=t&rct=j&p=&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk")
+	expected := Referrer{
+		Type:   Search,
+		Label:  "Yahoo!",
+		URL:    "https://yahoo.com?p=&sa=t&rct=j&p=&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk",
+		Host:   "yahoo.com",
+		Domain: "yahoo",
+		Tld:    "com",
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSeachGoogleHttpsNoParams(t *testing.T) {
+	actual := DefaultRules.Parse("https://google.com")
+	expected := Referrer{
+		Type:       Search,
+		Label:      "Google",
+		URL:        "https://google.com",
+		Host:       "google.com",
+		Domain:     "google",
+		Tld:        "com",
+		GoogleType: OrganicSearch,
 	}
 	assert.Equal(t, expected, actual)
 }
