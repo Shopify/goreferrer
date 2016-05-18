@@ -158,3 +158,99 @@ func TestSearchQueryInFragment(t *testing.T) {
 	}
 	assert.Equal(t, expected, actual)
 }
+
+func TestSearchQueryWithYahooCountry(t *testing.T) {
+	actual := DefaultRules.Parse("http://ca.search.yahoo.com/search?p=hello")
+	expected := Referrer{
+		Type:      Search,
+		Label:     "Yahoo!",
+		URL:       "http://ca.search.yahoo.com/search?p=hello",
+		Host:      "ca.search.yahoo.com",
+		Subdomain: "ca.search",
+		Domain:    "yahoo",
+		Tld:       "com",
+		Path:      "/search",
+		Query:     "hello",
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchQueryWithYahooCountryAndFragment(t *testing.T) {
+	actual := DefaultRules.Parse("http://ca.search.yahoo.com/search#p=hello")
+	expected := Referrer{
+		Type:      Search,
+		Label:     "Yahoo!",
+		URL:       "http://ca.search.yahoo.com/search#p=hello",
+		Host:      "ca.search.yahoo.com",
+		Subdomain: "ca.search",
+		Domain:    "yahoo",
+		Tld:       "com",
+		Path:      "/search",
+		Query:     "hello",
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchBindNotLive(t *testing.T) {
+	actual := DefaultRules.Parse("http://bing.com/?q=blargh")
+	expected := Referrer{
+		Type:   Search,
+		Label:  "Bing",
+		URL:    "http://bing.com/?q=blargh",
+		Host:   "bing.com",
+		Domain: "bing",
+		Tld:    "com",
+		Path:   "/",
+		Query:  "blargh",
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchNonAscii(t *testing.T) {
+	t.Skip("Semicolons are reserved")
+	actual := DefaultRules.Parse("http://search.yahoo.com/search;_ylt=A0geu8fBeW5SqVEAZ2vrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDWmxUdFhVZ2V1eVVMYVp6c1VmRmRMUXUyMkxfbjJsSnVlY0VBQlhDWQRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANVRFRzSGFBUVF0ZUZHZ2hzZ0N3VDNBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgbXlzaG9waWZ5IHJlbmf4cmluZyBta29iZXRpYwR0X3N0bXADMTM4Mjk3MjM1NDIzMwR2dGVzdGlkA01TWUNBQzE-?p=vinduespudsning+myshopify+rengøring+mkobetic&fr2=sb-top&fr=yfp-t-715&rd=r1")
+	expected := Referrer{
+		Type:      Search,
+		Label:     "Yahoo!",
+		URL:       "http://search.yahoo.com/search;_ylt=A0geu8fBeW5SqVEAZ2vrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDWmxUdFhVZ2V1eVVMYVp6c1VmRmRMUXUyMkxfbjJsSnVlY0VBQlhDWQRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANVRFRzSGFBUVF0ZUZHZ2hzZ0N3VDNBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgbXlzaG9waWZ5IHJlbmf4cmluZyBta29iZXRpYwR0X3N0bXADMTM4Mjk3MjM1NDIzMwR2dGVzdGlkA01TWUNBQzE-?p=vinduespudsning+myshopify+rengøring+mkobetic&fr2=sb-top&fr=yfp-t-715&rd=r1",
+		Host:      "search.yahoo.com",
+		Subdomain: "search",
+		Domain:    "yahoo",
+		Tld:       "com",
+		Path:      "/search",
+		Query:     "vinduespudsning myshopify rengøring mkobetic",
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchWithCyrillics(t *testing.T) {
+	actual := DefaultRules.Parse("http://www.yandex.com/yandsearch?text=%D0%B1%D0%BE%D1%82%D0%B8%D0%BD%D0%BA%D0%B8%20packer-shoes&lr=87&msid=22868.18811.1382712652.60127&noreask=1")
+	expected := Referrer{
+		Type:      Search,
+		Label:     "Yandex",
+		URL:       "http://www.yandex.com/yandsearch?text=%D0%B1%D0%BE%D1%82%D0%B8%D0%BD%D0%BA%D0%B8%20packer-shoes&lr=87&msid=22868.18811.1382712652.60127&noreask=1",
+		Host:      "www.yandex.com",
+		Subdomain: "www",
+		Domain:    "yandex",
+		Tld:       "com",
+		Path:      "/yandsearch",
+		Query:     "ботинки packer-shoes",
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchWithExplicitPlus(t *testing.T) {
+	actual := DefaultRules.Parse(`http://search.yahoo.com/search;_ylt=A0geu8nVvm5StDIAIxHrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDSjNTOW9rZ2V1eVVMYVp6c1VmRmRMUkdDMkxfbjJsSnV2dFVBQmZyWgRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANDc01MSGlnTVFOS2k2cDRqcUxERzRBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgSk9LQVBPTEFSICIxMSArIDExIiBta29iZXRpYwR0X3N0bXADMTM4Mjk4OTYwMjg3OQR2dGVzdGlkA01TWUNBQzE-?p=vinduespudsning+JOKAPOLAR+"11+%2B+11"+mkobetic&fr2=sb-top&fr=yfp-t-715&rd=r1`)
+	expected := Referrer{
+		Type:      Search,
+		Label:     "Yahoo!",
+		URL:       `http://search.yahoo.com/search;_ylt=A0geu8nVvm5StDIAIxHrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDSjNTOW9rZ2V1eVVMYVp6c1VmRmRMUkdDMkxfbjJsSnV2dFVBQmZyWgRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANDc01MSGlnTVFOS2k2cDRqcUxERzRBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgSk9LQVBPTEFSICIxMSArIDExIiBta29iZXRpYwR0X3N0bXADMTM4Mjk4OTYwMjg3OQR2dGVzdGlkA01TWUNBQzE-?p=vinduespudsning+JOKAPOLAR+"11+%2B+11"+mkobetic&fr2=sb-top&fr=yfp-t-715&rd=r1`,
+		Host:      "search.yahoo.com",
+		Subdomain: "search",
+		Domain:    "yahoo",
+		Tld:       "com",
+		Path:      "/search;_ylt=A0geu8nVvm5StDIAIxHrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDSjNTOW9rZ2V1eVVMYVp6c1VmRmRMUkdDMkxfbjJsSnV2dFVBQmZyWgRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANDc01MSGlnTVFOS2k2cDRqcUxERzRBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgSk9LQVBPTEFSICIxMSArIDExIiBta29iZXRpYwR0X3N0bXADMTM4Mjk4OTYwMjg3OQR2dGVzdGlkA01TWUNBQzE-",
+		Query:     `vinduespudsning JOKAPOLAR "11 + 11" mkobetic`,
+	}
+	assert.Equal(t, expected, actual)
+}
