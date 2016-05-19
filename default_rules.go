@@ -1,8 +1,61 @@
+package goreferrer
+
+import (
+	"strings"
+)
+
+var DefaultRules RuleSet
+
+func init() {
+	domainRules, err := LoadJsonDomainRules(strings.NewReader(defaultRules))
+	if err != nil {
+		panic(err)
+	}
+
+	DefaultRules = RuleSet{
+		DomainRules: domainRules,
+		UaRules: map[string]UaRule{
+			"Twitter": UaRule{
+				Url:    "twitter://twitter.com",
+				Domain: "twitter",
+				Tld:    "com",
+			},
+			"Pinterest": UaRule{
+				Url:    "pinterest://pinterest.com",
+				Domain: "pinterest",
+				Tld:    "com",
+			},
+			"Facebook": UaRule{
+				Url:    "facebook://facebook.com",
+				Domain: "facebook",
+				Tld:    "com",
+			},
+			"FBAV": UaRule{
+				Url:    "facebook://facebook.com",
+				Domain: "facebook",
+				Tld:    "com",
+			},
+		},
+	}
+}
+
+const defaultRules = `
 {
     "email": {
+        "AOL Mail": {
+            "domains": [
+                "mail.aol.com",
+                "cpw.mail.aol.com"
+            ]
+        },
         "Gmail": {
             "domains": [
                 "mail.google.com"
+            ]
+        },
+        "Xfinity":{
+            "domains": [
+                "web.mail.comcast.net"
             ]
         },
         "Orange Webmail": {
@@ -12,7 +65,78 @@
         },
         "Outlook.com": {
             "domains": [
-                "mail.live.com"
+                "mail.live.com",
+                "outlook.live.com",
+                "blu180.mail.live.com",
+                "col130.mail.live.com",
+                "blu184.mail.live.com",
+                "bay179.mail.live.com",
+                "col131.mail.live.com",
+                "blu179.mail.live.com",
+                "bay180.mail.live.com",
+                "blu182.mail.live.com",
+                "blu181.mail.live.com",
+                "bay182.mail.live.com",
+                "snt149.mail.live.com",
+                "bay181.mail.live.com",
+                "col129.mail.live.com",
+                "snt148.mail.live.com",
+                "snt147.mail.live.com",
+                "snt146.mail.live.com",
+                "snt153.mail.live.com",
+                "snt152.mail.live.com",
+                "snt150.mail.live.com",
+                "snt151.mail.live.com",
+                "col128.mail.live.com",
+                "blu185.mail.live.com",
+                "dub125.mail.live.com",
+                "dub128.mail.live.com",
+                "dub127.mail.live.com",
+                "dub131.mail.live.com",
+                "col125.mail.live.com",
+                "dub130.mail.live.com",
+                "blu172.mail.live.com",
+                "bay169.mail.live.com",
+                "blu175.mail.live.com",
+                "blu173.mail.live.com",
+                "bay176.mail.live.com",
+                "blu176.mail.live.com",
+                "col126.mail.live.com",
+                "col127.mail.live.com",
+                "blu177.mail.live.com",
+                "blu174.mail.live.com",
+                "bay174.mail.live.com",
+                "bay172.mail.live.com",
+                "blu169.mail.live.com",
+                "bay177.mail.live.com",
+                "blu178.mail.live.com",
+                "blu171.mail.live.com",
+                "dub126.mail.live.com",
+                "blu168.mail.live.com",
+                "bay173.mail.live.com",
+                "bay175.mail.live.com",
+                "bay178.mail.live.com",
+                "bay168.mail.live.com",
+                "bay167.mail.live.com",
+                "blu170.mail.live.com",
+                "dub124.mail.live.com",
+                "dub122.mail.live.com",
+                "dub121.mail.live.com",
+                "dub129.mail.live.com",
+                "dub114.mail.live.com",
+                "dub110.mail.live.com",
+                "dub111.mail.live.com",
+                "dub113.mail.live.com",
+                "dub109.mail.live.com",
+                "dub120.mail.live.com",
+                "dub115.mail.live.com",
+                "dub123.mail.live.com",
+                "dub119.mail.live.com",
+                "dub118.mail.live.com",
+                "dub112.mail.live.com",
+                "dub117.mail.live.com",
+                "dub116.mail.live.com",
+                "blu183.mail.live.com"
             ]
         },
         "Yahoo! Mail": {
@@ -20,6 +144,20 @@
                 "mail.yahoo.net",
                 "mail.yahoo.com",
                 "mail.yahoo.co.uk"
+            ]
+        },
+        "MailChimp": {
+            "domains": [
+                "list-manage.com",
+                "list-manage1.com",
+                "list-manage2.com",
+                "list-manage3.com",
+                "list-manage4.com",
+                "list-manage5.com",
+                "list-manage6.com",
+                "list-manage7.com",
+                "list-manage8.com",
+                "list-manage9.com"
             ]
         }
     },
@@ -52,6 +190,8 @@
         "AOL": {
             "domains": [
                 "search.aol.com",
+                "search.aol.ca",
+                "m.search.aol.com",
                 "search.aol.it",
                 "aolsearch.aol.com",
                 "www.aolrecherche.aol.fr",
@@ -74,7 +214,8 @@
                 "search.hp.my.aol.com.au",
                 "search.hp.my.aol.de",
                 "search.hp.my.aol.it",
-                "search-intl.netscape.com"
+                "search-intl.netscape.com",
+                "www.aol.com"
             ],
             "parameters": [
                 "q"
@@ -158,6 +299,23 @@
             ],
             "parameters": [
                 "q"
+            ]
+        },
+        "Amazon": {
+            "domains": [
+                "amazon.com",
+                "amazon.co.uk",
+                "amazon.ca",
+                "amazon.de",
+                "amazon.fr",
+                "amazonaws.com",
+                "amazon.co.jp",
+                "amazon.es",
+                "amazon.it",
+                "amazon.in"
+            ],
+            "parameters": [
+                "field-keywords"
             ]
         },
         "Apontador": {
@@ -249,7 +407,15 @@
                 "zhidao.baidu.com",
                 "tieba.baidu.com",
                 "news.baidu.com",
-                "web.gougou.com"
+                "web.gougou.com",
+                "m.baidu.com",
+                "image.baidu.com",
+                "tieba.baidu.com",
+                "fanyi.baidu.com",
+                "zhidao.baidu.com",
+                "www.baidu.co.th",
+                "m5.baidu.com",
+                "m.siteapp.baidu.com"
             ],
             "parameters": [
                 "wd",
@@ -341,7 +507,9 @@
         },
         "Comcast": {
             "domains": [
-                "serach.comcast.net"
+                "search.comcast.net",
+                "comcast.net",
+                "xfinity.com"
             ],
             "parameters": [
                 "q"
@@ -436,7 +604,7 @@
                 "s"
             ]
         },
-        "DuckDuckGoL": {
+        "DuckDuckGo": {
             "domains": [
                 "duckduckgo.com"
             ],
@@ -665,6 +833,7 @@
                 "www.google.com",
                 "www.google.ac",
                 "www.google.ad",
+                "www.google.al",
                 "www.google.com.af",
                 "www.google.com.ag",
                 "www.google.com.ai",
@@ -840,6 +1009,7 @@
                 "www.google.com.tn",
                 "www.google.com.tr",
                 "www.google.tt",
+                "www.google.tn",
                 "www.google.com.tw",
                 "www.google.co.tz",
                 "www.google.com.ua",
@@ -859,9 +1029,17 @@
                 "www.google.co.za",
                 "www.google.co.zm",
                 "www.google.co.zw",
+                "www.google.com.mm",
+                "www.google.sr",
+                "www.google.com.pg",
+                "www.google.bt",
+                "www.google.ng",
+                "www.google.com.iq",
+                "www.google.co.ao",
                 "google.com",
                 "google.ac",
                 "google.ad",
+                "google.al",
                 "google.com.af",
                 "google.com.ag",
                 "google.com.ai",
@@ -1028,6 +1206,7 @@
                 "google.com.sv",
                 "google.td",
                 "google.tg",
+                "google.tn",
                 "google.co.th",
                 "google.com.tj",
                 "google.tk",
@@ -1081,7 +1260,8 @@
                 "www.googleearth.fr",
                 "webcache.googleusercontent.com",
                 "encrypted.google.com",
-                "googlesyndicatedsearch.com"
+                "googlesyndicatedsearch.com",
+                "www.googleadservices.com"
             ],
             "parameters": [
                 "q",
@@ -2366,6 +2546,14 @@
                 "query"
             ]
         },
+        "Haosou": {
+            "domains": [
+                "www.haosou.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
         "I-play": {
             "domains": [
                 "start.iplay.com"
@@ -2439,6 +2627,22 @@
                 "s"
             ]
         },
+        "Inbox": {
+            "domains": [
+                "inbox.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        }, 
+        "Info": {
+            "domains": [
+                "info.com"
+            ],
+            "parameters": [
+                "qkw"
+            ]
+        }, 
         "Interia": {
             "domains": [
                 "www.google.interia.pl"
@@ -2856,6 +3060,14 @@
                 "q"
             ]
         },
+        "SearchLock": {
+            "domains": [
+                "searchlock.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
         "Searchy": {
             "domains": [
                 "www.searchy.co.uk"
@@ -2934,6 +3146,14 @@
             ],
             "parameters": [
                 "q"
+            ]
+        },
+        "Superpages": {
+            "domains": [
+                "superpages.com"
+            ],
+            "parameters": [
+                "C"
             ]
         },
         "T-Online": {
@@ -3225,7 +3445,6 @@
                 "qc.search.yahoo.com",
                 "qc.yahoo.com",
                 "qc.yahoo.com",
-                "r.search.yahoo.com",
                 "se.search.yahoo.com",
                 "se.search.yahoo.com",
                 "se.yahoo.com",
@@ -3237,7 +3456,10 @@
                 "search.yahoo.co.jp",
                 "www.cercato.it",
                 "search.offerbox.com",
-                "ys.mirostart.com"
+                "ys.mirostart.com",
+                "image.search.yahoo.co.jp",
+                "m.chiebukuro.yahoo.co.jp",
+                "detail.chiebukuro.yahoo.co.jp"
             ],
             "parameters": [
                 "p",
@@ -3301,6 +3523,16 @@
             "domains": [
                 "www.yatedo.com",
                 "www.yatedo.fr"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
+        "Yellowpages": {
+            "domains": [
+                "www.yellowpages.com",
+                "www.yellowpages.com.au",
+                "www.yellowpages.ca"
             ],
             "parameters": [
                 "q"
@@ -3490,6 +3722,11 @@
                 "blackplanet.com"
             ]
         },
+        "Bloglovin'": {
+            "domains": [
+                "bloglovin.com"
+            ]
+        },
         "Buzznet": {
             "domains": [
                 "wayn.com"
@@ -3503,6 +3740,11 @@
         "Cyworld": {
             "domains": [
                 "global.cyworld.com"
+            ]
+        },
+        "DeviantArt":{
+            "domains": [
+                "deviantart.com"
             ]
         },
         "Douban": {
@@ -3524,6 +3766,11 @@
         "Flixster": {
             "domains": [
                 "flixster.com"
+            ]
+        },
+        "Flipboard": {
+            "domains": [
+                "flipboard.com"
             ]
         },
         "Fotolog": {
@@ -3583,9 +3830,24 @@
                 "hyves.nl"
             ]
         },
+        "Iconosquare": {
+            "domains": [
+                "iconosquare.com"
+            ]
+        },
         "Identi.ca": {
             "domains": [
                 "identi.ca"
+            ]
+        },
+        "Imgur": {
+            "domains": [
+                "imgur.com"
+            ]
+        },
+        "Instagram": {
+            "domains": [
+                "instagram.com"
             ]
         },
         "Last.fm": {
@@ -3595,7 +3857,8 @@
         },
         "LinkedIn": {
             "domains": [
-                "linkedin.com"
+                "linkedin.com",
+                "lnkd.in"
             ]
         },
         "LiveJournal": {
@@ -3606,6 +3869,21 @@
         "Mail.ru": {
             "domains": [
                 "my.mail.ru"
+            ]
+        },
+        "Medium": {
+            "domains": [
+                "medium.com"
+            ]
+        },
+        "Meetup": {
+            "domains": [
+                "meetup.com"
+            ]
+        },
+        "Messenger": {
+            "domains": [
+                "messenger.com"
             ]
         },
         "Mixi": {
@@ -3673,6 +3951,11 @@
                 "plaxo.com"
             ]
         },
+        "Polyvore": {
+            "domains": [
+                "polyvore.com"
+            ]
+        },
         "Qzone": {
             "domains": [
                 "qzone.qq.com"
@@ -3735,7 +4018,8 @@
         },
         "Tumblr": {
             "domains": [
-                "tumblr.com"
+                "tumblr.com",
+                "umblr.com"
             ]
         },
         "Twitter": {
@@ -3744,15 +4028,30 @@
                 "t.co"
             ]
         },
+        "Twitch":{
+          "domains": [
+                "twitch.tv"
+          ]
+        },
         "Viadeo": {
             "domains": [
                 "viadeo.com"
+            ]
+        },
+        "Vimeo": {
+            "domains": [
+                "vimeo.com"
             ]
         },
         "Vkontakte": {
             "domains": [
                 "vk.com",
                 "vkontakte.ru"
+            ]
+        },
+        "Wanelo": {
+          "domains": [
+             "wanelo.com"
             ]
         },
         "WAYN": {
@@ -3800,6 +4099,12 @@
             "domains": [
                 "vkrugudruzei.ru"
             ]
+        },
+        "YouTube": {
+            "domains": [
+                "youtube.com",
+                "youtu.be"
+            ]
         }
     },
     "unknown": {
@@ -3839,3 +4144,4 @@
         }
     }
 }
+`

@@ -1,116 +1,210 @@
-package referrer
+package goreferrer
 
 import (
-	"bufio"
 	"encoding/json"
-	"io/ioutil"
+	"io"
+	"net/url"
+	"path"
 	"strings"
 )
 
-const (
-	DataDir           = "./data"
-	RulesFilename     = "referrers.json"
-	EnginesFilename   = "search.csv"
-	ParameterWildcard = "*"
-)
-
-type SearchRule struct {
+type DomainRule struct {
+	Type       ReferrerType
 	Label      string
 	Domain     string
 	Parameters []string
 }
 
-type SocialRule struct {
-	Label  string
+type UaRule struct {
+	Url    string
 	Domain string
+	Tld    string
 }
 
-type EmailRule struct {
-	Label  string
-	Domain string
-}
-
-// RuleSet maps the JSON structure in the file
-type RuleSet map[string]map[string][]string
-
-// InitRules can be used to load custom definitions of social sites and search engines
-func InitRules(rulesPath string) error {
-	rulesJson, err := ioutil.ReadFile(rulesPath)
-	if err != nil {
-		return err
+func (u UaRule) RegisteredDomain() string {
+	if u.Domain == "" || u.Tld == "" {
+		return ""
 	}
-	rules := make(map[string]RuleSet)
-	if err := json.Unmarshal(rulesJson, &rules); err != nil {
-		return err
+
+	return u.Domain + "." + u.Tld
+}
+
+type RuleSet struct {
+	DomainRules map[string]DomainRule
+	UaRules     map[string]UaRule
+}
+
+func NewRuleSet() RuleSet {
+	return RuleSet{
+		DomainRules: make(map[string]DomainRule),
+		UaRules:     make(map[string]UaRule),
 	}
-	SearchRules = mappedSearchRules(rules["search"])
-	SocialRules = mappedSocialRules(rules["social"])
-	EmailRules = mappedEmailRules(rules["email"])
-	return nil
 }
 
-// InitSearchEngines can be used to load custom definitions of search engines for fuzzy matching
-func InitSearchEngines(enginesPath string) error {
-	var err error
-	SearchEngines, err = readSearchEngines(enginesPath)
-	return err
+func (r RuleSet) Merge(other RuleSet) {
+	for k, v := range other.DomainRules {
+		r.DomainRules[k] = v
+	}
+	for k, v := range other.UaRules {
+		r.UaRules[k] = v
+	}
 }
 
-func mappedSearchRules(rawRules RuleSet) map[string]SearchRule {
-	mappedRules := make(map[string]SearchRule)
-	for label, rawRule := range rawRules {
-		for _, domain := range rawRule["domains"] {
-			rule := SearchRule{Label: label, Domain: domain}
-			rawParams := rawRule["parameters"]
-			params := make([]string, len(rawParams))
-			for _, param := range rawParams {
-				params = append(params, param)
+func (r RuleSet) Parse(URL string) Referrer {
+	return r.ParseWith(URL, nil, "")
+}
+
+func (r RuleSet) ParseWith(URL string, domains []string, agent string) Referrer {
+	ref := Referrer{
+		Type: Indirect,
+		URL:  strings.Trim(URL, " \t\r\n"),
+	}
+
+	uaRule := r.getUaRule(agent)
+	if ref.URL == "" {
+		ref.URL = uaRule.Url
+	}
+	if ref.URL == "" {
+		ref.Type = Direct
+		return ref
+	}
+
+	u, ok := parseRichUrl(ref.URL)
+	if !ok {
+		ref.Type = Invalid
+		return ref
+	}
+
+	ref.Subdomain = u.Subdomain
+	ref.Domain = u.Domain
+	ref.Tld = u.Tld
+	ref.Path = cleanPath(u.Path)
+
+	if ref.Domain == "" {
+		ref.Domain = uaRule.Domain
+	}
+	if ref.Tld == "" {
+		ref.Tld = uaRule.Tld
+	}
+
+	for _, domain := range domains {
+		if u.Host == domain {
+			ref.Type = Direct
+			return ref
+		}
+	}
+
+	variations := []string{
+		path.Join(u.Host, u.Path),
+		path.Join(u.RegisteredDomain(), u.Path),
+		u.Host,
+		u.RegisteredDomain(),
+	}
+
+	if uaDomain := uaRule.RegisteredDomain(); uaDomain != "" {
+		variations = append(variations, uaDomain)
+	}
+
+	for _, host := range variations {
+		domainRule, exists := r.DomainRules[host]
+		if !exists {
+			continue
+		}
+
+		query := getQuery(u.Query(), domainRule.Parameters)
+		if query == "" {
+			values, err := url.ParseQuery(u.Fragment)
+			if err == nil {
+				query = getQuery(values, domainRule.Parameters)
 			}
-			rule.Parameters = params
-			mappedRules[rule.Domain] = rule
 		}
+
+		ref.Type = domainRule.Type
+		ref.Label = domainRule.Label
+		ref.Query = query
+		ref.GoogleType = googleSearchType(ref)
+		return ref
 	}
-	return mappedRules
+
+	ref.Label = strings.Title(u.Domain)
+	return ref
 }
 
-func mappedSocialRules(rawRules RuleSet) map[string]SocialRule {
-	mappedRules := make(map[string]SocialRule)
-	for label, rawRule := range rawRules {
-		for _, domain := range rawRule["domains"] {
-			mappedRules[domain] = SocialRule{Label: label, Domain: domain}
-			for _, prefix := range []string{"www.", "m.", "l.", "lm."} {
-				variation := prefix + domain
-				mappedRules[variation] = SocialRule{Label: label, Domain: domain}
-			}
+func (r *RuleSet) getUaRule(agent string) UaRule {
+	for pattern, rule := range r.UaRules {
+		if strings.Contains(agent, pattern) {
+			return rule
 		}
 	}
-	return mappedRules
+
+	return UaRule{}
 }
 
-func mappedEmailRules(rawRules RuleSet) map[string]EmailRule {
-	mappedRules := make(map[string]EmailRule)
-	for label, rawRule := range rawRules {
-		for _, domain := range rawRule["domains"] {
-			mappedRules[domain] = EmailRule{Label: label, Domain: domain}
+func getQuery(values url.Values, params []string) string {
+	for _, param := range params {
+		query := values.Get(param)
+		if query != "" {
+			return query
 		}
 	}
-	return mappedRules
+
+	return ""
 }
 
-func readSearchEngines(enginesPath string) (map[string]SearchRule, error) {
-	enginesCsv, err := ioutil.ReadFile(enginesPath)
-	if err != nil {
+func googleSearchType(ref Referrer) GoogleSearchType {
+	if ref.Type != Search || !strings.Contains(ref.Label, "Google") {
+		return NotGoogleSearch
+	}
+
+	if strings.HasPrefix(ref.Path, "/aclk") || strings.HasPrefix(ref.Path, "/pagead/aclk") {
+		return Adwords
+	}
+
+	return OrganicSearch
+}
+
+func cleanPath(path string) string {
+	if i := strings.Index(path, ";"); i != -1 {
+		return path[:i]
+	}
+	return path
+}
+
+type jsonRule struct {
+	Domains    []string
+	Parameters []string
+}
+
+type jsonRules struct {
+	Email  map[string]jsonRule
+	Search map[string]jsonRule
+	Social map[string]jsonRule
+}
+
+func LoadJsonDomainRules(reader io.Reader) (map[string]DomainRule, error) {
+	var decoded jsonRules
+	if err := json.NewDecoder(reader).Decode(&decoded); err != nil {
 		return nil, err
 	}
-	engines := make(map[string]SearchRule)
-	scanner := bufio.NewScanner(strings.NewReader(string(enginesCsv)))
-	for scanner.Scan() {
-		line := strings.Trim(scanner.Text(), " \n\r\t")
-		if line != "" && line[0] != '#' {
-			tokens := strings.Split(line, ":")
-			params := strings.Split(tokens[2], ",")
-			engines[tokens[1]] = SearchRule{Label: tokens[0], Domain: tokens[1], Parameters: params}
+
+	rules := NewRuleSet()
+	rules.Merge(extractRules(decoded.Email, Email))
+	rules.Merge(extractRules(decoded.Search, Search))
+	rules.Merge(extractRules(decoded.Social, Social))
+	return rules.DomainRules, nil
+}
+
+func extractRules(ruleMap map[string]jsonRule, Type ReferrerType) RuleSet {
+	rules := NewRuleSet()
+	for label, jsonRule := range ruleMap {
+		for _, domain := range jsonRule.Domains {
+			rules.DomainRules[domain] = DomainRule{
+				Type:       Type,
+				Label:      label,
+				Domain:     domain,
+				Parameters: jsonRule.Parameters,
+			}
 		}
 	}
-	return engines, nil
+	return rules
 }
