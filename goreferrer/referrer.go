@@ -32,13 +32,24 @@ type Referrer struct {
 	Type       ReferrerType
 	Label      string
 	URL        string
-	Host       string
 	Subdomain  string
 	Domain     string
 	Tld        string
 	Path       string
 	Query      string
 	GoogleType GoogleSearchType
+}
+
+func (r *Referrer) RegisteredDomain() string {
+	return r.Domain + "." + r.Tld
+}
+
+func (r *Referrer) Host() string {
+	if r.Subdomain != "" {
+		return r.Subdomain + "." + r.RegisteredDomain()
+	}
+
+	return r.RegisteredDomain()
 }
 
 type GoogleSearchType int

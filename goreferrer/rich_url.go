@@ -7,16 +7,16 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
-type Url struct {
+type richUrl struct {
 	*url.URL
 	Subdomain string
 	Domain    string
 	Tld       string
 }
 
-func parseUrl(s string) (*Url, bool) {
+func parseRichUrl(s string) (*richUrl, bool) {
 	u, err := url.Parse(s)
-	if err != nil || u.Host == "" {
+	if err != nil {
 		return nil, false
 	}
 
@@ -28,10 +28,10 @@ func parseUrl(s string) (*Url, bool) {
 	hostWithoutTld := u.Host[:len(u.Host)-len(tld)-1]
 	lastDot := strings.LastIndex(hostWithoutTld, ".")
 	if lastDot == -1 {
-		return &Url{URL: u, Domain: hostWithoutTld, Tld: tld}, true
+		return &richUrl{URL: u, Domain: hostWithoutTld, Tld: tld}, true
 	}
 
-	return &Url{
+	return &richUrl{
 		URL:       u,
 		Subdomain: hostWithoutTld[:lastDot],
 		Domain:    hostWithoutTld[lastDot+1:],
@@ -39,6 +39,6 @@ func parseUrl(s string) (*Url, bool) {
 	}, true
 }
 
-func (u *Url) RegisteredDomain() string {
+func (u *richUrl) RegisteredDomain() string {
 	return u.Domain + "." + u.Tld
 }

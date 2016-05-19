@@ -7,15 +7,39 @@ import (
 var DefaultRules RuleSet
 
 func init() {
-	var err error
-	DefaultRules, err = LoadJsonRules(strings.NewReader(defaultRules))
+	domainRules, err := LoadJsonDomainRules(strings.NewReader(defaultRules))
 	if err != nil {
 		panic(err)
+	}
+
+	DefaultRules = RuleSet{
+		DomainRules: domainRules,
+		UaRules: map[string]UaRule{
+			"Twitter": UaRule{
+				Url:    "twitter://twitter.com",
+				Domain: "twitter",
+				Tld:    "com",
+			},
+			"Pinterest": UaRule{
+				Url:    "pinterest://pinterest.com",
+				Domain: "pinterest",
+				Tld:    "com",
+			},
+			"Facebook": UaRule{
+				Url:    "facebook://facebook.com",
+				Domain: "facebook",
+				Tld:    "com",
+			},
+			"FBAV": UaRule{
+				Url:    "facebook://facebook.com",
+				Domain: "facebook",
+				Tld:    "com",
+			},
+		},
 	}
 }
 
 const defaultRules = `
-
 {
     "email": {
         "AOL Mail": {

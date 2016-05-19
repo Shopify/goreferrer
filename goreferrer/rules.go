@@ -8,74 +8,92 @@ import (
 	"strings"
 )
 
-type Rule struct {
+type DomainRule struct {
 	Type       ReferrerType
 	Label      string
 	Domain     string
 	Parameters []string
 }
 
-type RuleSet map[string]Rule
+type UaRule struct {
+	Url    string
+	Domain string
+	Tld    string
+}
+
+func (u UaRule) RegisteredDomain() string {
+	if u.Domain == "" || u.Tld == "" {
+		return ""
+	}
+
+	return u.Domain + "." + u.Tld
+}
+
+type RuleSet struct {
+	DomainRules map[string]DomainRule
+	UaRules     map[string]UaRule
+}
+
+func NewRuleSet() RuleSet {
+	return RuleSet{
+		DomainRules: make(map[string]DomainRule),
+		UaRules:     make(map[string]UaRule),
+	}
+}
 
 func (r RuleSet) Merge(other RuleSet) {
-	for k, v := range other {
-		r[k] = v
+	for k, v := range other.DomainRules {
+		r.DomainRules[k] = v
+	}
+	for k, v := range other.UaRules {
+		r.UaRules[k] = v
 	}
 }
 
 func (r RuleSet) Parse(URL string) Referrer {
-	URL = strings.Trim(URL, " \t\r\n")
-	if URL == "" {
-		return Referrer{
-			Type: Direct,
-		}
-	}
-
-	u, ok := parseUrl(URL)
-	if !ok {
-		return Referrer{
-			Type: Invalid,
-			URL:  URL,
-		}
-	}
-
-	return r.parseUrl(u)
+	return r.ParseWith(URL, nil, "")
 }
 
-func (r RuleSet) ParseWithDirect(URL string, domains ...string) Referrer {
-	URL = strings.Trim(URL, " \t\r\n")
-	if URL == "" {
-		return Referrer{
-			Type: Direct,
-		}
+func (r RuleSet) ParseWith(URL string, domains []string, agent string) Referrer {
+	ref := Referrer{
+		Type: Indirect,
+		URL:  strings.Trim(URL, " \t\r\n"),
 	}
 
-	u, ok := parseUrl(URL)
+	uaRule := r.getUaRule(agent)
+	if ref.URL == "" {
+		ref.URL = uaRule.Url
+	}
+	if ref.URL == "" {
+		ref.Type = Direct
+		return ref
+	}
+
+	u, ok := parseRichUrl(ref.URL)
 	if !ok {
-		return Referrer{
-			Type: Invalid,
-			URL:  URL,
-		}
+		ref.Type = Invalid
+		return ref
+	}
+
+	ref.Subdomain = u.Subdomain
+	ref.Domain = u.Domain
+	ref.Tld = u.Tld
+	ref.Path = cleanPath(u.Path)
+
+	if ref.Domain == "" {
+		ref.Domain = uaRule.Domain
+	}
+	if ref.Tld == "" {
+		ref.Tld = uaRule.Tld
 	}
 
 	for _, domain := range domains {
 		if u.Host == domain {
-			return Referrer{
-				Type:      Direct,
-				URL:       URL,
-				Host:      domain,
-				Subdomain: u.Subdomain,
-				Domain:    u.Domain,
-				Tld:       u.Tld,
-				Path:      cleanPath(u.Path),
-			}
+			ref.Type = Direct
+			return ref
 		}
 	}
 
-	return r.parseUrl(u)
-}
-
-func (r RuleSet) parseUrl(u *Url) Referrer {
 	variations := []string{
 		path.Join(u.Host, u.Path),
 		path.Join(u.RegisteredDomain(), u.Path),
@@ -83,45 +101,43 @@ func (r RuleSet) parseUrl(u *Url) Referrer {
 		u.RegisteredDomain(),
 	}
 
+	if uaDomain := uaRule.RegisteredDomain(); uaDomain != "" {
+		variations = append(variations, uaDomain)
+	}
+
 	for _, host := range variations {
-		rule, exists := r[host]
+		domainRule, exists := r.DomainRules[host]
 		if !exists {
 			continue
 		}
 
-		query := getQuery(u.Query(), rule.Parameters)
+		query := getQuery(u.Query(), domainRule.Parameters)
 		if query == "" {
 			values, err := url.ParseQuery(u.Fragment)
 			if err == nil {
-				query = getQuery(values, rule.Parameters)
+				query = getQuery(values, domainRule.Parameters)
 			}
 		}
 
-		ref := Referrer{
-			Type:      rule.Type,
-			Label:     rule.Label,
-			URL:       u.String(),
-			Host:      u.Host,
-			Subdomain: u.Subdomain,
-			Domain:    u.Domain,
-			Tld:       u.Tld,
-			Path:      cleanPath(u.Path),
-			Query:     query,
-		}
+		ref.Type = domainRule.Type
+		ref.Label = domainRule.Label
+		ref.Query = query
 		ref.GoogleType = googleSearchType(ref)
 		return ref
 	}
 
-	return Referrer{
-		Type:      Indirect,
-		Label:     strings.Title(u.Domain),
-		URL:       u.String(),
-		Host:      u.Host,
-		Subdomain: u.Subdomain,
-		Domain:    u.Domain,
-		Tld:       u.Tld,
-		Path:      cleanPath(u.Path),
+	ref.Label = strings.Title(u.Domain)
+	return ref
+}
+
+func (r *RuleSet) getUaRule(agent string) UaRule {
+	for pattern, rule := range r.UaRules {
+		if strings.Contains(agent, pattern) {
+			return rule
+		}
 	}
+
+	return UaRule{}
 }
 
 func getQuery(values url.Values, params []string) string {
@@ -167,24 +183,24 @@ type jsonRules struct {
 
 // LoadJsonRules can be used to load custom definitions of social sites and
 // search engines.
-func LoadJsonRules(reader io.Reader) (RuleSet, error) {
+func LoadJsonDomainRules(reader io.Reader) (map[string]DomainRule, error) {
 	var decoded jsonRules
 	if err := json.NewDecoder(reader).Decode(&decoded); err != nil {
 		return nil, err
 	}
 
-	rules := make(RuleSet)
+	rules := NewRuleSet()
 	rules.Merge(extractRules(decoded.Email, Email))
 	rules.Merge(extractRules(decoded.Search, Search))
 	rules.Merge(extractRules(decoded.Social, Social))
-	return rules, nil
+	return rules.DomainRules, nil
 }
 
 func extractRules(ruleMap map[string]jsonRule, Type ReferrerType) RuleSet {
-	rules := make(RuleSet)
+	rules := NewRuleSet()
 	for label, jsonRule := range ruleMap {
 		for _, domain := range jsonRule.Domains {
-			rules[domain] = Rule{
+			rules.DomainRules[domain] = DomainRule{
 				Type:       Type,
 				Label:      label,
 				Domain:     domain,
