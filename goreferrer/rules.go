@@ -114,6 +114,7 @@ func (r RuleSet) parseUrl(u *Url) Referrer {
 
 	return Referrer{
 		Type:      Indirect,
+		Label:     strings.Title(u.Domain),
 		URL:       u.String(),
 		Host:      u.Host,
 		Subdomain: u.Subdomain,

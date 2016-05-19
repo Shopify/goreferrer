@@ -21,6 +21,10 @@ func parseUrl(s string) (*Url, bool) {
 	}
 
 	tld, _ := publicsuffix.PublicSuffix(u.Host)
+	if tld == "" || len(u.Host)-len(tld) < 2 {
+		return nil, false
+	}
+
 	hostWithoutTld := u.Host[:len(u.Host)-len(tld)-1]
 	lastDot := strings.LastIndex(hostWithoutTld, ".")
 	if lastDot == -1 {

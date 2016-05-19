@@ -6,6 +6,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestParseExtractsUrlComponents(t *testing.T) {
+	actual := DefaultRules.Parse("http://mysubdomain.myothersubdomain.supersite.co.uk/party/time?q=ohyeah&t=555")
+	expected := Referrer{
+		Type:      Indirect,
+		Label:     "Supersite",
+		URL:       "http://mysubdomain.myothersubdomain.supersite.co.uk/party/time?q=ohyeah&t=555",
+		Host:      "mysubdomain.myothersubdomain.supersite.co.uk",
+		Subdomain: "mysubdomain.myothersubdomain",
+		Domain:    "supersite",
+		Tld:       "co.uk",
+		Path:      "/party/time",
+	}
+	assert.Equal(t, expected, actual)
+}
+
 func TestBlankReferrerIsDirect(t *testing.T) {
 	blank := DefaultRules.Parse("")
 	whitespace := DefaultRules.Parse(" \t\n\r")
@@ -14,22 +29,21 @@ func TestBlankReferrerIsDirect(t *testing.T) {
 }
 
 func TestUnknownDomainIsIndirect(t *testing.T) {
-	actual := DefaultRules.Parse("https://example.org/path?foo=bar#baz")
-	expected := Referrer{
-		Type:   Indirect,
-		URL:    "https://example.org/path?foo=bar#baz",
-		Host:   "example.org",
-		Domain: "example",
-		Tld:    "org",
-		Path:   "/path",
-	}
-	assert.Equal(t, expected, actual)
+	actual := DefaultRules.Parse("http://walrus.com/")
+	assert.Equal(t, Indirect, actual.Type)
+}
+
+func TestIndirectLabelIsTitelized(t *testing.T) {
+	actual := DefaultRules.Parse("http://walrus.com/")
+	assert.Equal(t, "Walrus", actual.Label)
 }
 
 func TestMalformedUrlIsInvalid(t *testing.T) {
 	urls := []string{
 		"blap",
 		"blap blap",
+		"http://blapblap",
+		"http://.com",
 		"http://",
 		"/",
 	}
@@ -267,7 +281,7 @@ func TestSearchWithEmptyQuery(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestSeachGoogleHttpsNoParams(t *testing.T) {
+func TestSearchGoogleNoParams(t *testing.T) {
 	actual := DefaultRules.Parse("https://google.com")
 	expected := Referrer{
 		Type:       Search,
@@ -277,6 +291,73 @@ func TestSeachGoogleHttpsNoParams(t *testing.T) {
 		Domain:     "google",
 		Tld:        "com",
 		GoogleType: OrganicSearch,
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchGoogleWithQuery(t *testing.T) {
+	actual := DefaultRules.Parse("https://www.google.co.in/url?sa=t&rct=j&q=test&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk")
+	expected := Referrer{
+		Type:       Search,
+		Label:      "Google",
+		URL:        "https://www.google.co.in/url?sa=t&rct=j&q=test&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk",
+		Host:       "www.google.co.in",
+		Subdomain:  "www",
+		Domain:     "google",
+		Tld:        "co.in",
+		Path:       "/url",
+		Query:      "test",
+		GoogleType: OrganicSearch,
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchGoogleImage(t *testing.T) {
+	actual := DefaultRules.Parse("https://www.google.ca/imgres?q=tbn:ANd9GcRXBkHjJiAvKXkjGzSEhilZS5vJX0UPFmyZTlmmRFpiv-IYQmj4")
+	expected := Referrer{
+		Type:       Search,
+		Label:      "Google Images",
+		URL:        "https://www.google.ca/imgres?q=tbn:ANd9GcRXBkHjJiAvKXkjGzSEhilZS5vJX0UPFmyZTlmmRFpiv-IYQmj4",
+		Host:       "www.google.ca",
+		Subdomain:  "www",
+		Domain:     "google",
+		Tld:        "ca",
+		Path:       "/imgres",
+		Query:      "tbn:ANd9GcRXBkHjJiAvKXkjGzSEhilZS5vJX0UPFmyZTlmmRFpiv-IYQmj4",
+		GoogleType: OrganicSearch,
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchGoogleAdwords(t *testing.T) {
+	actual := DefaultRules.Parse("http://www.google.ca/aclk?sa=l&ai=Cp3RJ8ri&sig=AOD64f7w&clui=0&rct=j&q=&ved=0CBoQDEA&adurl=http://www.domain.com/")
+	expected := Referrer{
+		Type:       Search,
+		Label:      "Google",
+		URL:        "http://www.google.ca/aclk?sa=l&ai=Cp3RJ8ri&sig=AOD64f7w&clui=0&rct=j&q=&ved=0CBoQDEA&adurl=http://www.domain.com/",
+		Host:       "www.google.ca",
+		Subdomain:  "www",
+		Domain:     "google",
+		Tld:        "ca",
+		Path:       "/aclk",
+		GoogleType: Adwords,
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSearchGooglePageAd(t *testing.T) {
+	actual := DefaultRules.Parse("http://www.googleadservices.com/pagead/aclk?sa=l&q=flowers&ohost=www.google.com")
+	expected := Referrer{
+		Type:       Search,
+		Label:      "Google",
+		URL:        "http://www.googleadservices.com/pagead/aclk?sa=l&q=flowers&ohost=www.google.com",
+		Host:       "www.googleadservices.com",
+		Subdomain:  "www",
+		Domain:     "googleadservices",
+		Tld:        "com",
+		Path:       "/pagead/aclk",
+		Query:      "flowers",
+		GoogleType: Adwords,
 	}
 	assert.Equal(t, expected, actual)
 }
