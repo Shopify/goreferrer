@@ -41,7 +41,11 @@ type Referrer struct {
 }
 
 func (r *Referrer) RegisteredDomain() string {
-	return r.Domain + "." + r.Tld
+	if r.Domain != "" && r.Tld != "" {
+		return r.Domain + "." + r.Tld
+	}
+
+	return ""
 }
 
 func (r *Referrer) Host() string {
