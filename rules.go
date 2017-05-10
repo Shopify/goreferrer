@@ -101,10 +101,6 @@ func (r RuleSet) ParseWith(URL string, domains []string, agent string) Referrer 
 		u.RegisteredDomain(),
 	}
 
-	if uaDomain := uaRule.RegisteredDomain(); uaDomain != "" {
-		variations = append(variations, uaDomain)
-	}
-
 	for _, host := range variations {
 		domainRule, exists := r.DomainRules[host]
 		if !exists {
