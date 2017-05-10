@@ -451,3 +451,29 @@ func TestNoScheme(t *testing.T) {
 	}
 	assert.Equal(t, expected, actual)
 }
+
+func TestSocialUAWithReferrer(t *testing.T) {
+	actual := DefaultRules.ParseWith("https://www.example.org/products/my-leggings?s=1", nil, "Mozilla/5.0 (Linux; Android 6.0.1; SAMSUNG-SM-N910A Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.83 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/122.0.0.17.71;]")
+	expected := Referrer{
+		Type:      Indirect,
+		Label:     "Example",
+		URL:       "https://www.example.org/products/my-leggings?s=1",
+		Subdomain: "www",
+		Domain:    "example",
+		Tld:       "org",
+		Path:      "/products/my-leggings",
+	}
+	assert.Equal(t, expected, actual)
+}
+
+func TestSocialUAWithoutReferrer(t *testing.T) {
+	actual := DefaultRules.ParseWith("", nil, "Mozilla/5.0 (Linux; Android 6.0.1; SAMSUNG-SM-N910A Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.83 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/127.0.0.1;]")
+	expected := Referrer{
+		Type:   Social,
+		Label:  "Facebook",
+		URL:    "facebook://facebook.com",
+		Domain: "facebook",
+		Tld:    "com",
+	}
+	assert.Equal(t, expected, actual)
+}
