@@ -15,6 +15,10 @@ type richUrl struct {
 }
 
 func parseRichUrl(s string) (*richUrl, bool) {
+	if strings.Index(s, "://") == -1 {
+		s = "http://" + s
+	}
+
 	u, err := url.Parse(s)
 	if err != nil {
 		return nil, false

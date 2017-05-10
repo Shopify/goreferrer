@@ -438,3 +438,16 @@ func TestUnicodeUrls(t *testing.T) {
 	}
 	assert.Equal(t, expected, actual)
 }
+
+func TestNoScheme(t *testing.T) {
+	actual := DefaultRules.Parse("example.org/path")
+	expected := Referrer{
+		Type:   Indirect,
+		Label:  "Example",
+		URL:    "example.org/path",
+		Domain: "example",
+		Tld:    "org",
+		Path:   "/path",
+	}
+	assert.Equal(t, expected, actual)
+}
