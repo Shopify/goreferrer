@@ -1,7 +1,11 @@
 name: goreferrer
 
 up:
-  - go: 1.6.2
+  - go: 1.9.2
+  - custom:
+      name: Setup go dependencies
+      meet: echo 'dep failed to install packages'; false
+      met?: dep ensure -v
 
 commands:
   test:
