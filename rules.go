@@ -66,12 +66,14 @@ func (r RuleSet) ParseWith(URL string, domains []string, agent string) Referrer 
 	}
 	if ref.URL == "" {
 		ref.Type = Direct
+		ref.Channel = marketingChannel(ref)
 		return ref
 	}
 
 	u, ok := parseRichUrl(ref.URL)
 	if !ok {
 		ref.Type = Invalid
+		ref.Channel = marketingChannel(ref)
 		return ref
 	}
 
@@ -90,6 +92,7 @@ func (r RuleSet) ParseWith(URL string, domains []string, agent string) Referrer 
 	for _, domain := range domains {
 		if u.Host == domain {
 			ref.Type = Direct
+			ref.Channel = marketingChannel(ref)
 			return ref
 		}
 	}
@@ -119,10 +122,13 @@ func (r RuleSet) ParseWith(URL string, domains []string, agent string) Referrer 
 		ref.Label = domainRule.Label
 		ref.Query = query
 		ref.GoogleType = googleSearchType(ref)
+		ref.Channel = marketingChannel(ref)
 		return ref
 	}
 
 	ref.Label = strings.Title(u.Domain)
+	ref.Channel = marketingChannel(ref)
+
 	return ref
 }
 
@@ -157,6 +163,22 @@ func googleSearchType(ref Referrer) GoogleSearchType {
 	}
 
 	return OrganicSearch
+}
+
+func marketingChannel(ref Referrer) MarketingChannel {
+	if ref.Type == Social {
+		return SocialChannel
+	}
+	if ref.Type == Email {
+		return EmailChannel
+	}
+	if ref.Type == Search {
+		return OrganicSearchChannel
+	}
+	if ref.Type == Indirect {
+		return OrganicReferralChannel
+	}
+	return DirectChannel
 }
 
 func cleanPath(path string) string {
