@@ -9,6 +9,7 @@ import (
 func TestParseExtractsUrlComponents(t *testing.T) {
 	actual := DefaultRules.Parse("http://mysubdomain.myothersubdomain.supersite.co.uk/party/time?q=ohyeah&t=555")
 	expected := Referrer{
+		Channel:   OrganicReferralChannel,
 		Type:      Indirect,
 		Label:     "Supersite",
 		URL:       "http://mysubdomain.myothersubdomain.supersite.co.uk/party/time?q=ohyeah&t=555",
@@ -93,6 +94,7 @@ func TestMatchOnDomainAndTld(t *testing.T) {
 func TestEmailSimple(t *testing.T) {
 	actual := DefaultRules.Parse("https://mail.google.com/9aifaufasodf8usafd")
 	expected := Referrer{
+		Channel:   EmailChannel,
 		Type:      Email,
 		Label:     "Gmail",
 		URL:       "https://mail.google.com/9aifaufasodf8usafd",
@@ -107,12 +109,13 @@ func TestEmailSimple(t *testing.T) {
 func TestSocialSimple(t *testing.T) {
 	actual := DefaultRules.Parse("https://twitter.com/snormore/status/391149968360103936")
 	expected := Referrer{
-		Type:   Social,
-		Label:  "Twitter",
-		URL:    "https://twitter.com/snormore/status/391149968360103936",
-		Domain: "twitter",
-		Tld:    "com",
-		Path:   "/snormore/status/391149968360103936",
+		Channel: SocialChannel,
+		Type:    Social,
+		Label:   "Twitter",
+		URL:     "https://twitter.com/snormore/status/391149968360103936",
+		Domain:  "twitter",
+		Tld:     "com",
+		Path:    "/snormore/status/391149968360103936",
 	}
 	assert.Equal(t, expected, actual)
 }
@@ -120,6 +123,7 @@ func TestSocialSimple(t *testing.T) {
 func TestSocialSubdomain(t *testing.T) {
 	actual := DefaultRules.Parse("https://puppyanimalbarn.tumblr.com")
 	expected := Referrer{
+		Channel:   SocialChannel,
 		Type:      Social,
 		Label:     "Tumblr",
 		URL:       "https://puppyanimalbarn.tumblr.com",
@@ -133,6 +137,7 @@ func TestSocialSubdomain(t *testing.T) {
 func TestSocialGooglePlus(t *testing.T) {
 	actual := DefaultRules.Parse("http://plus.url.google.com/url?sa=z&n=1394219098538&url=http%3A%2F%2Fjoe.blogspot.ca&usg=jo2tEVIcI5Wh-6t--v-1ODEeGG8.")
 	expected := Referrer{
+		Channel:   SocialChannel,
 		Type:      Social,
 		Label:     "Google+",
 		URL:       "http://plus.url.google.com/url?sa=z&n=1394219098538&url=http%3A%2F%2Fjoe.blogspot.ca&usg=jo2tEVIcI5Wh-6t--v-1ODEeGG8.",
@@ -147,6 +152,7 @@ func TestSocialGooglePlus(t *testing.T) {
 func TestSearchSimple(t *testing.T) {
 	actual := DefaultRules.Parse("http://search.yahoo.com/search?p=hello")
 	expected := Referrer{
+		Channel:   OrganicSearchChannel,
 		Type:      Search,
 		Label:     "Yahoo!",
 		URL:       "http://search.yahoo.com/search?p=hello",
@@ -162,6 +168,7 @@ func TestSearchSimple(t *testing.T) {
 func TestSearchQueryInFragment(t *testing.T) {
 	actual := DefaultRules.Parse("http://search.yahoo.com/search#p=hello")
 	expected := Referrer{
+		Channel:   OrganicSearchChannel,
 		Type:      Search,
 		Label:     "Yahoo!",
 		URL:       "http://search.yahoo.com/search#p=hello",
@@ -177,6 +184,7 @@ func TestSearchQueryInFragment(t *testing.T) {
 func TestSearchQueryWithYahooCountry(t *testing.T) {
 	actual := DefaultRules.Parse("http://ca.search.yahoo.com/search?p=hello")
 	expected := Referrer{
+		Channel:   OrganicSearchChannel,
 		Type:      Search,
 		Label:     "Yahoo!",
 		URL:       "http://ca.search.yahoo.com/search?p=hello",
@@ -192,6 +200,7 @@ func TestSearchQueryWithYahooCountry(t *testing.T) {
 func TestSearchQueryWithYahooCountryAndFragment(t *testing.T) {
 	actual := DefaultRules.Parse("http://ca.search.yahoo.com/search#p=hello")
 	expected := Referrer{
+		Channel:   OrganicSearchChannel,
 		Type:      Search,
 		Label:     "Yahoo!",
 		URL:       "http://ca.search.yahoo.com/search#p=hello",
@@ -207,13 +216,14 @@ func TestSearchQueryWithYahooCountryAndFragment(t *testing.T) {
 func TestSearchBindNotLive(t *testing.T) {
 	actual := DefaultRules.Parse("http://bing.com/?q=blargh")
 	expected := Referrer{
-		Type:   Search,
-		Label:  "Bing",
-		URL:    "http://bing.com/?q=blargh",
-		Domain: "bing",
-		Tld:    "com",
-		Path:   "/",
-		Query:  "blargh",
+		Channel: OrganicSearchChannel,
+		Type:    Search,
+		Label:   "Bing",
+		URL:     "http://bing.com/?q=blargh",
+		Domain:  "bing",
+		Tld:     "com",
+		Path:    "/",
+		Query:   "blargh",
 	}
 	assert.Equal(t, expected, actual)
 }
@@ -221,6 +231,7 @@ func TestSearchBindNotLive(t *testing.T) {
 func TestSearchNonAscii(t *testing.T) {
 	actual := DefaultRules.Parse("http://search.yahoo.com/search;_ylt=A0geu8fBeW5SqVEAZ2vrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDWmxUdFhVZ2V1eVVMYVp6c1VmRmRMUXUyMkxfbjJsSnVlY0VBQlhDWQRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANVRFRzSGFBUVF0ZUZHZ2hzZ0N3VDNBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgbXlzaG9waWZ5IHJlbmf4cmluZyBta29iZXRpYwR0X3N0bXADMTM4Mjk3MjM1NDIzMwR2dGVzdGlkA01TWUNBQzE-?p=vinduespudsning+myshopify+rengøring+mkobetic&fr2=sb-top&fr=yfp-t-715&rd=r1")
 	expected := Referrer{
+		Channel:   OrganicSearchChannel,
 		Type:      Search,
 		Label:     "Yahoo!",
 		URL:       "http://search.yahoo.com/search;_ylt=A0geu8fBeW5SqVEAZ2vrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDWmxUdFhVZ2V1eVVMYVp6c1VmRmRMUXUyMkxfbjJsSnVlY0VBQlhDWQRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANVRFRzSGFBUVF0ZUZHZ2hzZ0N3VDNBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgbXlzaG9waWZ5IHJlbmf4cmluZyBta29iZXRpYwR0X3N0bXADMTM4Mjk3MjM1NDIzMwR2dGVzdGlkA01TWUNBQzE-?p=vinduespudsning+myshopify+rengøring+mkobetic&fr2=sb-top&fr=yfp-t-715&rd=r1",
@@ -236,6 +247,7 @@ func TestSearchNonAscii(t *testing.T) {
 func TestSearchWithCyrillics(t *testing.T) {
 	actual := DefaultRules.Parse("http://www.yandex.com/yandsearch?text=%D0%B1%D0%BE%D1%82%D0%B8%D0%BD%D0%BA%D0%B8%20packer-shoes&lr=87&msid=22868.18811.1382712652.60127&noreask=1")
 	expected := Referrer{
+		Channel:   OrganicSearchChannel,
 		Type:      Search,
 		Label:     "Yandex",
 		URL:       "http://www.yandex.com/yandsearch?text=%D0%B1%D0%BE%D1%82%D0%B8%D0%BD%D0%BA%D0%B8%20packer-shoes&lr=87&msid=22868.18811.1382712652.60127&noreask=1",
@@ -251,6 +263,7 @@ func TestSearchWithCyrillics(t *testing.T) {
 func TestSearchWithExplicitPlus(t *testing.T) {
 	actual := DefaultRules.Parse(`http://search.yahoo.com/search;_ylt=A0geu8nVvm5StDIAIxHrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDSjNTOW9rZ2V1eVVMYVp6c1VmRmRMUkdDMkxfbjJsSnV2dFVBQmZyWgRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANDc01MSGlnTVFOS2k2cDRqcUxERzRBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgSk9LQVBPTEFSICIxMSArIDExIiBta29iZXRpYwR0X3N0bXADMTM4Mjk4OTYwMjg3OQR2dGVzdGlkA01TWUNBQzE-?p=vinduespudsning+JOKAPOLAR+"11+%2B+11"+mkobetic&fr2=sb-top&fr=yfp-t-715&rd=r1`)
 	expected := Referrer{
+		Channel:   OrganicSearchChannel,
 		Type:      Search,
 		Label:     "Yahoo!",
 		URL:       `http://search.yahoo.com/search;_ylt=A0geu8nVvm5StDIAIxHrFAx.;_ylc=X1MDMjExNDcyMTAwMwRfcgMyBGJjawMwbXFjc3RoOHYybjlkJTI2YiUzRDMlMjZzJTNEYWkEY3NyY3B2aWQDSjNTOW9rZ2V1eVVMYVp6c1VmRmRMUkdDMkxfbjJsSnV2dFVBQmZyWgRmcgN5ZnAtdC03MTUEZnIyA3NiLXRvcARncHJpZANDc01MSGlnTVFOS2k2cDRqcUxERzRBBG10ZXN0aWQDbnVsbARuX3JzbHQDMARuX3N1Z2cDMARvcmlnaW4DY2Euc2VhcmNoLnlhaG9vLmNvbQRwb3MDMARwcXN0cgMEcHFzdHJsAwRxc3RybAM0NARxdWVyeQN2aW5kdWVzcHVkc25pbmcgSk9LQVBPTEFSICIxMSArIDExIiBta29iZXRpYwR0X3N0bXADMTM4Mjk4OTYwMjg3OQR2dGVzdGlkA01TWUNBQzE-?p=vinduespudsning+JOKAPOLAR+"11+%2B+11"+mkobetic&fr2=sb-top&fr=yfp-t-715&rd=r1`,
@@ -266,11 +279,12 @@ func TestSearchWithExplicitPlus(t *testing.T) {
 func TestSearchWithEmptyQuery(t *testing.T) {
 	actual := DefaultRules.Parse("https://yahoo.com?p=&sa=t&rct=j&p=&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk")
 	expected := Referrer{
-		Type:   Search,
-		Label:  "Yahoo!",
-		URL:    "https://yahoo.com?p=&sa=t&rct=j&p=&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk",
-		Domain: "yahoo",
-		Tld:    "com",
+		Channel: OrganicSearchChannel,
+		Type:    Search,
+		Label:   "Yahoo!",
+		URL:     "https://yahoo.com?p=&sa=t&rct=j&p=&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk",
+		Domain:  "yahoo",
+		Tld:     "com",
 	}
 	assert.Equal(t, expected, actual)
 }
@@ -278,6 +292,7 @@ func TestSearchWithEmptyQuery(t *testing.T) {
 func TestSearchGoogleNoParams(t *testing.T) {
 	actual := DefaultRules.Parse("https://google.com")
 	expected := Referrer{
+		Channel:    OrganicSearchChannel,
 		Type:       Search,
 		Label:      "Google",
 		URL:        "https://google.com",
@@ -291,6 +306,7 @@ func TestSearchGoogleNoParams(t *testing.T) {
 func TestSearchGoogleWithQuery(t *testing.T) {
 	actual := DefaultRules.Parse("https://www.google.co.in/url?sa=t&rct=j&q=test&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk")
 	expected := Referrer{
+		Channel:    OrganicSearchChannel,
 		Type:       Search,
 		Label:      "Google",
 		URL:        "https://www.google.co.in/url?sa=t&rct=j&q=test&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk",
@@ -307,6 +323,7 @@ func TestSearchGoogleWithQuery(t *testing.T) {
 func TestSearchGoogleImage(t *testing.T) {
 	actual := DefaultRules.Parse("https://www.google.ca/imgres?q=tbn:ANd9GcRXBkHjJiAvKXkjGzSEhilZS5vJX0UPFmyZTlmmRFpiv-IYQmj4")
 	expected := Referrer{
+		Channel:    OrganicSearchChannel,
 		Type:       Search,
 		Label:      "Google Images",
 		URL:        "https://www.google.ca/imgres?q=tbn:ANd9GcRXBkHjJiAvKXkjGzSEhilZS5vJX0UPFmyZTlmmRFpiv-IYQmj4",
@@ -323,6 +340,7 @@ func TestSearchGoogleImage(t *testing.T) {
 func TestSearchGoogleAdwords(t *testing.T) {
 	actual := DefaultRules.Parse("http://www.google.ca/aclk?sa=l&ai=Cp3RJ8ri&sig=AOD64f7w&clui=0&rct=j&q=&ved=0CBoQDEA&adurl=http://www.domain.com/")
 	expected := Referrer{
+		Channel:    OrganicSearchChannel,
 		Type:       Search,
 		Label:      "Google",
 		URL:        "http://www.google.ca/aclk?sa=l&ai=Cp3RJ8ri&sig=AOD64f7w&clui=0&rct=j&q=&ved=0CBoQDEA&adurl=http://www.domain.com/",
@@ -338,6 +356,7 @@ func TestSearchGoogleAdwords(t *testing.T) {
 func TestSearchGooglePageAd(t *testing.T) {
 	actual := DefaultRules.Parse("http://www.googleadservices.com/pagead/aclk?sa=l&q=flowers&ohost=www.google.com")
 	expected := Referrer{
+		Channel:    OrganicSearchChannel,
 		Type:       Search,
 		Label:      "Google",
 		URL:        "http://www.googleadservices.com/pagead/aclk?sa=l&q=flowers&ohost=www.google.com",
@@ -354,11 +373,12 @@ func TestSearchGooglePageAd(t *testing.T) {
 func TestOnlyUserAgent(t *testing.T) {
 	actual := DefaultRules.ParseWith("", nil, "Mozilla/5.0 (iPhone; CPU iPhone OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Mobile/11B554a Twitter for iPhone")
 	expected := Referrer{
-		Type:   Social,
-		Label:  "Twitter",
-		URL:    "twitter://twitter.com",
-		Domain: "twitter",
-		Tld:    "com",
+		Channel: SocialChannel,
+		Type:    Social,
+		Label:   "Twitter",
+		URL:     "twitter://twitter.com",
+		Domain:  "twitter",
+		Tld:     "com",
 	}
 	assert.Equal(t, expected, actual)
 }
@@ -386,11 +406,12 @@ func TestCanonicalTwitterUserAgentMatchesUrl(t *testing.T) {
 func TestUnknownUserAgentHasNoEffect(t *testing.T) {
 	actual := DefaultRules.ParseWith("https://twitter.com", nil, "Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4 Mobile/7B367 Safari/531.21.10")
 	expected := Referrer{
-		Type:   Social,
-		Label:  "Twitter",
-		URL:    "https://twitter.com",
-		Domain: "twitter",
-		Tld:    "com",
+		Channel: SocialChannel,
+		Type:    Social,
+		Label:   "Twitter",
+		URL:     "https://twitter.com",
+		Domain:  "twitter",
+		Tld:     "com",
 	}
 	assert.Equal(t, expected, actual)
 }
@@ -398,24 +419,27 @@ func TestUnknownUserAgentHasNoEffect(t *testing.T) {
 func TestUrlOverridesUserAgent(t *testing.T) {
 	actual := DefaultRules.ParseWith("https://twitter.com", nil, "Mozilla/5.0 (iPhone; CPU iPhone OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Mobile/11B554a [Pinterest/iOS]")
 	expected := Referrer{
-		Type:   Social,
-		Label:  "Twitter",
-		URL:    "https://twitter.com",
-		Domain: "twitter",
-		Tld:    "com",
+		Channel: SocialChannel,
+		Type:    Social,
+		Label:   "Twitter",
+		URL:     "https://twitter.com",
+		Domain:  "twitter",
+		Tld:     "com",
 	}
 	assert.Equal(t, expected, actual)
 }
 
 func TestBlankUrlAndUnknownUserAgentIsDirect(t *testing.T) {
 	actual := DefaultRules.ParseWith("", nil, "Mozilla/5.0 (iPhone; CPU iPhone OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Mobile/11B554a")
-	expected := Referrer{Type: Direct}
+	expected := Referrer{
+		Channel: DirectChannel, Type: Direct}
 	assert.Equal(t, expected, actual)
 }
 
 func TestValidUrlOverridesUserAgent(t *testing.T) {
 	actual := DefaultRules.ParseWith("https://www.savealoonie.com", nil, "Mozilla/5.0 (iPhone; CPU iPhone OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Mobile/11B554a  [Pintest/iOS]")
 	expected := Referrer{
+		Channel:   OrganicReferralChannel,
 		Type:      Indirect,
 		Label:     "Savealoonie",
 		URL:       "https://www.savealoonie.com",
@@ -429,12 +453,13 @@ func TestValidUrlOverridesUserAgent(t *testing.T) {
 func TestUnicodeUrls(t *testing.T) {
 	actual := DefaultRules.Parse("http://президент.рф/")
 	expected := Referrer{
-		Type:   Indirect,
-		Label:  "Президент",
-		URL:    "http://президент.рф/",
-		Domain: "президент",
-		Tld:    "рф",
-		Path:   "/",
+		Channel: OrganicReferralChannel,
+		Type:    Indirect,
+		Label:   "Президент",
+		URL:     "http://президент.рф/",
+		Domain:  "президент",
+		Tld:     "рф",
+		Path:    "/",
 	}
 	assert.Equal(t, expected, actual)
 }
@@ -442,12 +467,13 @@ func TestUnicodeUrls(t *testing.T) {
 func TestNoScheme(t *testing.T) {
 	actual := DefaultRules.Parse("example.org/path")
 	expected := Referrer{
-		Type:   Indirect,
-		Label:  "Example",
-		URL:    "example.org/path",
-		Domain: "example",
-		Tld:    "org",
-		Path:   "/path",
+		Channel: OrganicReferralChannel,
+		Type:    Indirect,
+		Label:   "Example",
+		URL:     "example.org/path",
+		Domain:  "example",
+		Tld:     "org",
+		Path:    "/path",
 	}
 	assert.Equal(t, expected, actual)
 }
@@ -455,6 +481,7 @@ func TestNoScheme(t *testing.T) {
 func TestSocialUAWithReferrer(t *testing.T) {
 	actual := DefaultRules.ParseWith("https://www.example.org/products/my-leggings?s=1", nil, "Mozilla/5.0 (Linux; Android 6.0.1; SAMSUNG-SM-N910A Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.83 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/122.0.0.17.71;]")
 	expected := Referrer{
+		Channel:   OrganicReferralChannel,
 		Type:      Indirect,
 		Label:     "Example",
 		URL:       "https://www.example.org/products/my-leggings?s=1",
@@ -469,11 +496,12 @@ func TestSocialUAWithReferrer(t *testing.T) {
 func TestSocialUAWithoutReferrer(t *testing.T) {
 	actual := DefaultRules.ParseWith("", nil, "Mozilla/5.0 (Linux; Android 6.0.1; SAMSUNG-SM-N910A Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.83 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/127.0.0.1;]")
 	expected := Referrer{
-		Type:   Social,
-		Label:  "Facebook",
-		URL:    "facebook://facebook.com",
-		Domain: "facebook",
-		Tld:    "com",
+		Channel: SocialChannel,
+		Type:    Social,
+		Label:   "Facebook",
+		URL:     "facebook://facebook.com",
+		Domain:  "facebook",
+		Tld:     "com",
 	}
 	assert.Equal(t, expected, actual)
 }
