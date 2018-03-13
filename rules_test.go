@@ -335,6 +335,22 @@ func TestSearchGoogleAdwords(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
+func TestSearchGoogleWithGclid(t *testing.T) {
+	actual := DefaultRules.Parse("https://www.google.co.in/url?gclid=foo&sa=t&rct=j&q=test&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk")
+	expected := Referrer{
+		Type:       Search,
+		Label:      "Google",
+		URL:        "https://www.google.co.in/url?gclid=foo&sa=t&rct=j&q=test&esrc=s&source=web&cd=1&ved=0CDkQFjAA&url=http%3A%2F%2Fwww.yellowfashion.in%2F&ei=aZCPUtXmLcGQrQepkIHACA&usg=AFQjCNE-R5-7CENi9oqYe4vG-0g0E7nCSQ&bvm=bv.56988011,d.bmk",
+		Subdomain:  "www",
+		Domain:     "google",
+		Tld:        "co.in",
+		Path:       "/url",
+		Query:      "test",
+		GoogleType: Adwords,
+	}
+	assert.Equal(t, expected, actual)
+}
+
 func TestSearchGooglePageAd(t *testing.T) {
 	actual := DefaultRules.Parse("http://www.googleadservices.com/pagead/aclk?sa=l&q=flowers&ohost=www.google.com")
 	expected := Referrer{

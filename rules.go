@@ -152,7 +152,7 @@ func googleSearchType(ref Referrer) GoogleSearchType {
 		return NotGoogleSearch
 	}
 
-	if strings.HasPrefix(ref.Path, "/aclk") || strings.HasPrefix(ref.Path, "/pagead/aclk") {
+	if strings.HasPrefix(ref.Path, "/aclk") || strings.HasPrefix(ref.Path, "/pagead/aclk") || strings.Contains(ref.URL, "gclid=") {
 		return Adwords
 	}
 
