@@ -152,11 +152,27 @@ func googleSearchType(ref Referrer) GoogleSearchType {
 		return NotGoogleSearch
 	}
 
-	if strings.HasPrefix(ref.Path, "/aclk") || strings.HasPrefix(ref.Path, "/pagead/aclk") || strings.Contains(ref.URL, "gclid=") {
+	if strings.HasPrefix(ref.Path, "/aclk") || strings.HasPrefix(ref.Path, "/pagead/aclk") || hasGCLID(ref.URL) {
 		return Adwords
 	}
 
 	return OrganicSearch
+}
+
+func hasGCLID(rawURL string) bool {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return false
+	}
+
+	_, ok := m["gclid"]
+
+	return ok
 }
 
 func cleanPath(path string) string {
