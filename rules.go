@@ -118,7 +118,7 @@ func (r RuleSet) ParseWith(URL string, domains []string, agent string) Referrer 
 		ref.Type = domainRule.Type
 		ref.Label = domainRule.Label
 		ref.Query = query
-		ref.GoogleType = googleSearchType(ref)
+		ref.GoogleType = googleSearchType(u.URL, ref)
 		return ref
 	}
 
@@ -147,16 +147,21 @@ func getQuery(values url.Values, params []string) string {
 	return ""
 }
 
-func googleSearchType(ref Referrer) GoogleSearchType {
+func googleSearchType(u *url.URL, ref Referrer) GoogleSearchType {
 	if ref.Type != Search || !strings.Contains(ref.Label, "Google") {
 		return NotGoogleSearch
 	}
 
-	if strings.HasPrefix(ref.Path, "/aclk") || strings.HasPrefix(ref.Path, "/pagead/aclk") {
+	if strings.HasPrefix(ref.Path, "/aclk") || strings.HasPrefix(ref.Path, "/pagead/aclk") || hasGCLID(u) {
 		return Adwords
 	}
 
 	return OrganicSearch
+}
+
+func hasGCLID(u *url.URL) bool {
+	_, ok := u.Query()["gclid"]
+	return ok
 }
 
 func cleanPath(path string) string {
