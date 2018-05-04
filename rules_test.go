@@ -477,3 +477,17 @@ func TestSocialUAWithoutReferrer(t *testing.T) {
 	}
 	assert.Equal(t, expected, actual)
 }
+
+func TestSocialWithUrlInParam(t *testing.T) {
+	actual := DefaultRules.Parse("l.facebook.com/l.php?u=https://packershoes.com/products/air-jordan-11-retro-low-cool-grey\u0026h=ATPh0cYTPh869ZnMyg6tSQnX_hmfIbuaXxm711cu2PReoCnTmmuyt_zoPko_HuPZIYvykPXmd_88e0-cwU5SverRebM-8WzFB0JJCi8p0aD3RjHQIMNoM7qoPd4pWA")
+	expected := Referrer{
+		Type:      Social,
+		Label:     "Facebook",
+		URL:       "l.facebook.com/l.php?u=https://packershoes.com/products/air-jordan-11-retro-low-cool-grey\u0026h=ATPh0cYTPh869ZnMyg6tSQnX_hmfIbuaXxm711cu2PReoCnTmmuyt_zoPko_HuPZIYvykPXmd_88e0-cwU5SverRebM-8WzFB0JJCi8p0aD3RjHQIMNoM7qoPd4pWA",
+		Subdomain: "l",
+		Domain:    "facebook",
+		Tld:       "com",
+		Path:      "/l.php",
+	}
+	assert.Equal(t, expected, actual)
+}
