@@ -23,16 +23,13 @@ var urls = []string{
 
 func main() {
 	for _, url := range urls {
-		r, err := referrer.Parse(url)
-		if err != nil {
-			panic(err)
-		}
-		switch r := r.(type) {
-		case *referrer.Search:
+		r := goreferrer.DefaultRules.Parse(url)
+		switch r.Type {
+		case goreferrer.Search:
 			fmt.Printf("Search %s: %s\n", r.Label, r.Query)
-		case *referrer.Social:
+		case goreferrer.Social:
 			fmt.Printf("Social %s\n", r.Label)
-		case *referrer.Indirect:
+		case goreferrer.Indirect:
 			fmt.Printf("Indirect: %s\n", r.URL)
 		}
 	}
