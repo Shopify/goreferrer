@@ -1,13 +1,13 @@
 name: goreferrer
 
 up:
-  - go: 1.9.2
+  - go: 1.14.7
   - custom:
       name: Setup go dependencies
-      meet: echo 'dep failed to install packages'; false
-      met?: dep ensure -v
+      meet: echo 'go mod failed to install packages'; false
+      met?: go mod download
 
 commands:
   test:
-    run: go get -t ./... && go test ./...
+    run: go get -race -t ./... && go test -race ./...
     desc: 'run unit tests'
