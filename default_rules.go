@@ -2634,7 +2634,7 @@ const defaultRules = `
             "parameters": [
                 "q"
             ]
-        }, 
+        },
         "Info": {
             "domains": [
                 "info.com"
@@ -2642,7 +2642,7 @@ const defaultRules = `
             "parameters": [
                 "qkw"
             ]
-        }, 
+        },
         "Interia": {
             "domains": [
                 "www.google.interia.pl"
@@ -4009,6 +4009,11 @@ const defaultRules = `
         "Taringa!": {
             "domains": [
                 "taringa.net"
+            ]
+        },
+        "TikTok": {
+            "domains": [
+                "tiktok.com"
             ]
         },
         "Tuenti": {
