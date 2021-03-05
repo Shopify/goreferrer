@@ -1,8 +1,5 @@
 language: go
 
-go: 
-  - 1.2
-
 script:
   - go get github.com/stretchr/testify
   - go test -v
