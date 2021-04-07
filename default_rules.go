@@ -3976,11 +3976,11 @@ const defaultRules = `
                 "skyrock.com"
             ]
         },
-			  "Snapchat": {
-						"domains": [
-								"snapchat.com"
-						]
-				},
+        "Snapchat": {
+            "domains": [
+                "snapchat.com"
+            ]
+        },
         "Sonico.com": {
             "domains": [
                 "sonico.com"
