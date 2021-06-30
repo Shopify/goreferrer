@@ -4018,7 +4018,8 @@ const defaultRules = `
         },
         "TikTok": {
             "domains": [
-                "tiktok.com"
+                "tiktok.com",
+                "tiktokcdn.com"
             ]
         },
         "Tuenti": {
