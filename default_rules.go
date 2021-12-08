@@ -51,6 +51,7 @@ const defaultRules = `
         "Gmail": {
             "domains": [
                 "mail.google.com"
+		"android-app//com.google.android.gm"
             ]
         },
         "Xfinity":{
