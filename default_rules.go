@@ -4111,7 +4111,7 @@ const defaultRules = `
                 "vkrugudruzei.ru"
             ]
         },
-        "YouTube": {
+        "Youtube": {
             "domains": [
                 "youtube.com",
                 "youtu.be"
