@@ -42,20 +42,102 @@ func init() {
 const defaultRules = `
 {
     "email": {
+        "126 Mail": {
+            "domains": [
+                "mail.126.com"
+            ]
+        },
+        "163 Mail": {
+            "domains": [
+                "mail.163.com"
+            ]
+        },
+        "2degrees": {
+            "domains": [
+                "webmail.2degreesbroadband.co.nz"
+            ]
+        },
+        "Adam Internet": {
+            "domains": [
+                "webmail.adam.com.au"
+            ]
+        },
         "AOL Mail": {
             "domains": [
                 "mail.aol.com",
                 "cpw.mail.aol.com"
             ]
         },
-        "Gmail": {
-            "domains": [
-                "mail.google.com"
-            ]
-        },
         "Xfinity":{
             "domains": [
                 "web.mail.comcast.net"
+            ]
+        },
+        "Bigpond": {
+            "domains": [
+                "webmail.bigpond.com",
+                "webmail2.bigpond.com",
+                "email.telstra.com",
+                "basic.messaging.bigpond.com"
+            ]
+        },
+        "Commander": {
+            "domains": [
+                "webmail.commander.net.au"
+            ]
+        },
+        "Daum Mail": {
+            "domains": [
+                "mail2.daum.net",
+                "mail.daum.net"
+            ]
+        },
+        "Dodo": {
+            "domains": [
+                "webmail.dodo.com.au"
+            ]
+        },
+        "Freenet": {
+            "domains": [
+                "webmail.freenet.de"
+            ]
+        },
+        "Gmail": {
+            "domains": [
+                "mail.google.com",
+                "inbox.google.com"
+            ]
+        },
+        "iiNet": {
+            "domains": [
+                "webmail.iinet.net.au",
+                "mail.iinet.net.au"
+            ]
+        },
+        "Inbox.com": {
+            "domains": [
+                "inbox.com"
+            ]
+        },
+        "iPrimus": {
+            "domains": [
+                "webmail.iprimus.com.au"
+            ]
+        },
+        "Naver Mail": {
+            "domains": [
+                "mail.naver.com"
+            ]
+        },
+        "Netspace": {
+            "domains": [
+                "webmail.netspace.net.au"
+            ]
+        },
+        "Optus Zoo": {
+            "domains": [
+                "webmail.optuszoo.com.au",
+                "webmail.optusnet.com.au"
             ]
         },
         "Orange Webmail": {
@@ -139,11 +221,47 @@ const defaultRules = `
                 "blu183.mail.live.com"
             ]
         },
+        "QQ Mail": {
+            "domains": [
+                "mail.qq.com"
+            ]
+        },
+        "Seznam Mail": {
+            "domains": [
+                "email.seznam.cz"
+            ]
+        },
+        "Virgin": {
+            "domains": [
+                "webmail.virginbroadband.com.au"
+            ]
+        },
+        "Vodafone": {
+            "domains": [
+                "webmail.vodafone.co.nz"
+            ]
+        },
+        "Westnet": {
+            "domains": [
+                "webmail.westnet.com.au"
+            ]
+        },
         "Yahoo! Mail": {
             "domains": [
                 "mail.yahoo.net",
                 "mail.yahoo.com",
-                "mail.yahoo.co.uk"
+                "mail.yahoo.co.uk",
+                "mail.yahoo.co.jp"
+            ]
+        },
+        "Mynet Mail": {
+            "domains": [
+                "mail.mynet.com"
+            ]
+        },
+        "Zoho": {
+            "domains": [
+                "mail.zoho.com"
             ]
         },
         "MailChimp": {
@@ -170,12 +288,29 @@ const defaultRules = `
                 "q"
             ]
         },
+        "1&1": {
+            "domains": [
+                "search.1and1.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
         "1und1": {
             "domains": [
                 "search.1und1.de"
             ],
             "parameters": [
                 "su"
+            ]
+        },
+        "360.cn": {
+            "domains": [
+                "so.360.cn",
+                "www.so.com"
+            ],
+            "parameters": [
+                "q"
             ]
         },
         "ABCs\u00f8k": {
@@ -189,16 +324,19 @@ const defaultRules = `
         },
         "AOL": {
             "domains": [
-                "search.aol.com",
-                "search.aol.ca",
                 "m.search.aol.com",
+                "search.aol.ca",
+                "www.aol.com",
+                "search.aol.com",
                 "search.aol.it",
                 "aolsearch.aol.com",
+                "aolsearch.com",
                 "www.aolrecherche.aol.fr",
                 "www.aolrecherches.aol.fr",
                 "www.aolimages.aol.fr",
                 "aim.search.aol.com",
                 "www.recherche.aol.fr",
+                "recherche.aol.fr",
                 "find.web.aol.com",
                 "recherche.aol.ca",
                 "aolsearch.aol.co.uk",
@@ -214,11 +352,11 @@ const defaultRules = `
                 "search.hp.my.aol.com.au",
                 "search.hp.my.aol.de",
                 "search.hp.my.aol.it",
-                "search-intl.netscape.com",
-                "www.aol.com"
+                "search-intl.netscape.com"
             ],
             "parameters": [
-                "q"
+                "q",
+                "query"
             ]
         },
         "APOLL07": {
@@ -312,9 +450,11 @@ const defaultRules = `
                 "amazon.co.jp",
                 "amazon.es",
                 "amazon.it",
-                "amazon.in"
+                "amazon.in",
+                "www.amazon.com"
             ],
             "parameters": [
+                "keywords",
                 "field-keywords"
             ]
         },
@@ -355,6 +495,7 @@ const defaultRules = `
         "Ask": {
             "domains": [
                 "ask.com",
+                "www.ask.com",
                 "web.ask.com",
                 "int.ask.com",
                 "mws.ask.com",
@@ -372,6 +513,14 @@ const defaultRules = `
             ],
             "parameters": [
                 "q"
+            ]
+        },
+        "Ask Toolbar": {
+            "domains": [
+                "search.tb.ask.com"
+            ],
+            "parameters": [
+                "searchfor"
             ]
         },
         "Atlas": {
@@ -480,10 +629,26 @@ const defaultRules = `
                 "searchTerm"
             ]
         },
+        "British Telecommunications": {
+            "domains": [
+                "search.bt.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
         "Centrum": {
             "domains": [
                 "serach.centrum.cz",
                 "morfeo.centrum.cz"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
+        "Certified-Toolbar": {
+            "domains": [
+                "search.certified-toolbar.com"
             ],
             "parameters": [
                 "q"
@@ -556,6 +721,14 @@ const defaultRules = `
                 "q"
             ]
         },
+        "Dalesearch": {
+            "domains": [
+                "www.dalesearch.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
         "DasOertliche": {
             "domains": [
                 "www.dasoertliche.de"
@@ -602,6 +775,14 @@ const defaultRules = `
             ],
             "parameters": [
                 "s"
+            ]
+        },
+        "Dodo": {
+            "domains": [
+                "google.dodo.com.au"
+            ],
+            "parameters": [
+                "q"
             ]
         },
         "DuckDuckGo": {
@@ -694,6 +875,22 @@ const defaultRules = `
                 "q"
             ]
         },
+        "Finderoo": {
+            "domains": [
+                "www.finderoo.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
+        "Findwide": {
+            "domains": [
+                "search.findwide.com"
+            ],
+            "parameters": [
+                "k"
+            ]
+        },
         "Fireball": {
             "domains": [
                 "www.fireball.de"
@@ -724,6 +921,14 @@ const defaultRules = `
             ],
             "parameters": [
                 "keyword"
+            ]
+        },
+        "Flyingbird": {
+            "domains": [
+                "inspsearch.com"
+            ],
+            "parameters": [
+                "q"
             ]
         },
         "Forestle": {
@@ -771,6 +976,14 @@ const defaultRules = `
                 "Keywords"
             ]
         },
+        "Freshweather": {
+            "domains": [
+                "www.fresh-weather.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
         "FriendFeed": {
             "domains": [
                 "friendfeed.com"
@@ -803,10 +1016,27 @@ const defaultRules = `
                 "q"
             ]
         },
+        "Genieo": {
+            "domains": [
+                "search.genieo.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
         "Gigablast": {
             "domains": [
                 "www.gigablast.com",
                 "dir.gigablast.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
+        "Globososo": {
+            "domains": [
+                "searches.globososo.com",
+                "search.globososo.com"
             ],
             "parameters": [
                 "q"
@@ -2562,6 +2792,14 @@ const defaultRules = `
                 "q"
             ]
         },
+        "I.ua": {
+            "domains": [
+                "search.i.ua"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
         "ICQ": {
             "domains": [
                 "www.icq.com",
@@ -2630,6 +2868,14 @@ const defaultRules = `
         "Inbox": {
             "domains": [
                 "inbox.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
+        "Inbox.com": {
+            "domains": [
+                "inbox.com/search/"
             ],
             "parameters": [
                 "q"
@@ -2752,6 +2998,22 @@ const defaultRules = `
                 "query"
             ]
         },
+        "Marktplaats": {
+            "domains": [
+                "www.marktplaats.nl"
+            ],
+            "parameters": [
+                "query"
+            ]
+        },
+        "Maxwebsearch": {
+            "domains": [
+                "maxwebsearch.com"
+            ],
+            "parameters": [
+                "query"
+            ]
+        },
         "Meinestadt": {
             "domains": [
                 "www.meinestadt.de"
@@ -2856,6 +3118,15 @@ const defaultRules = `
         "Naver": {
             "domains": [
                 "search.naver.com"
+            ],
+            "parameters": [
+                "query"
+            ]
+        },
+        "Naver Images": {
+            "domains": [
+                "image.search.naver.com",
+                "imagesearch.naver.com"
             ],
             "parameters": [
                 "query"
@@ -2991,8 +3262,7 @@ const defaultRules = `
                 "fr2.rpmfind.net"
             ],
             "parameters": [
-                "rpmfind.net",
-                "fr2.rpmfind.net"
+                "query"
             ]
         },
         "Rakuten": {
@@ -3023,6 +3293,14 @@ const defaultRules = `
         "Sapo": {
             "domains": [
                 "pesquisa.sapo.pt"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
+        "Search This": {
+            "domains": [
+                "www.searchthis.com"
             ],
             "parameters": [
                 "q"
@@ -3100,6 +3378,15 @@ const defaultRules = `
                 "q"
             ]
         },
+        "The Smart Search": {
+            "domains": [
+                "thesmartsearch.net",
+                "www.thesmartsearch.net"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
         "Softonic": {
             "domains": [
                 "search.softonic.com"
@@ -3110,10 +3397,12 @@ const defaultRules = `
         },
         "Sogou": {
             "domains": [
-                "www.sougou.com"
+                "www.sogou.com",
+                "www.soso.com"
             ],
             "parameters": [
-                "query"
+                "query",
+                "w"
             ]
         },
         "Startpagina": {
@@ -3180,6 +3469,14 @@ const defaultRules = `
             ],
             "parameters": [
                 "q"
+            ]
+        },
+        "Telstra": {
+            "domains": [
+                "search.media.telstra.com.au"
+            ],
+            "parameters": [
+                "find"
             ]
         },
         "Teoma": {
@@ -3252,9 +3549,25 @@ const defaultRules = `
                 "w"
             ]
         },
+        "Tut.by": {
+            "domains": [
+                "search.tut.by"
+            ],
+            "parameters": [
+                "query"
+            ]
+        },
         "Twingly": {
             "domains": [
                 "www.twingly.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
+        "UKR.net": {
+            "domains": [
+                "search.ukr.net"
             ],
             "parameters": [
                 "q"
@@ -3297,13 +3610,22 @@ const defaultRules = `
                 "qs"
             ]
         },
+        "Vi-view": {
+            "domains": [
+                "viview.inspsearch.com"
+            ],
+            "parameters": [
+                "q"
+            ]
+        },
         "Voila": {
             "domains": [
                 "search.ke.voila.fr",
                 "www.lemoteur.fr"
             ],
             "parameters": [
-                "rdata"
+                "rdata",
+                "kw"
             ]
         },
         "Volny": {
@@ -3454,12 +3776,11 @@ const defaultRules = `
                 "uk.yahoo.com",
                 "www.yahoo.co.jp",
                 "search.yahoo.co.jp",
+                "m.chiebukuro.yahoo.co.jp",
+                "detail.chiebukuro.yahoo.co.jp",
                 "www.cercato.it",
                 "search.offerbox.com",
                 "ys.mirostart.com",
-                "image.search.yahoo.co.jp",
-                "m.chiebukuro.yahoo.co.jp",
-                "detail.chiebukuro.yahoo.co.jp"
             ],
             "parameters": [
                 "p",
@@ -3469,7 +3790,8 @@ const defaultRules = `
         "Yahoo! Images": {
             "domains": [
                 "image.yahoo.cn",
-                "images.search.yahoo.com"
+                "images.search.yahoo.com",
+                "image.search.yahoo.co.jp"
             ],
             "parameters": [
                 "p",
@@ -3489,9 +3811,11 @@ const defaultRules = `
                 "yandex.ru",
                 "yandex.ua",
                 "yandex.com",
+                "yandex.by",
                 "www.yandex.ru",
                 "www.yandex.ua",
-                "www.yandex.com"
+                "www.yandex.com",
+                "www.yandex.by"
             ],
             "parameters": [
                 "text"
@@ -3535,7 +3859,8 @@ const defaultRules = `
                 "www.yellowpages.ca"
             ],
             "parameters": [
-                "q"
+                "q",
+                "search_terms"
             ]
         },
         "Yippy": {
@@ -3681,12 +4006,22 @@ const defaultRules = `
                 "query"
             ]
         },
-        "soso.com": {
+        "SoSoDesk": {
             "domains": [
-                "www.soso.com"
+                "www.soso.com",
+                "sosodesktop.com",
+                "search.sosodesktop.com"
             ],
             "parameters": [
-                "w"
+                "q"
+            ]
+        },
+        "Snapdo": {
+            "domains": [
+                "search.snapdo.com"
+            ],
+            "parameters": [
+                "q"
             ]
         },
         "suche.info": {
@@ -3729,7 +4064,8 @@ const defaultRules = `
         },
         "Buzznet": {
             "domains": [
-                "wayn.com"
+                "wayn.com",
+                "buzznet.com"
             ]
         },
         "Classmates": {
@@ -3747,6 +4083,23 @@ const defaultRules = `
                 "deviantart.com"
             ]
         },
+        "Delicious":{
+            "domains": [
+                "delicious.com"
+            ]
+        },
+        "Discus": {
+             "domains": [
+                "redirect.disqus.com",
+                "disq.us",
+                "disqus.com"
+            ]
+        },
+        "Donanimhaber": {
+            "domains": [
+                "donanimhaber.com"
+            ]
+        },
         "Douban": {
             "domains": [
                 "douban.com"
@@ -3755,7 +4108,10 @@ const defaultRules = `
         "Facebook": {
             "domains": [
                 "facebook.com",
-                "fb.me"
+                "fb.me",
+                "m.facebook.com",
+                "l.facebook.com",
+                "lm.facebook.com"
             ]
         },
         "Flickr": {
@@ -3825,6 +4181,11 @@ const defaultRules = `
                 "news.ycombinator.com"
             ]
         },
+        "Hocam.com": {
+            "domains": [
+                "hocam.com"
+            ]
+        },
         "Hyves": {
             "domains": [
                 "hyves.nl"
@@ -3845,9 +4206,21 @@ const defaultRules = `
                 "imgur.com"
             ]
         },
+        "Inci Sozluk": {
+            "domains": [
+                "inci.sozlukspot.com",
+                "incisozluk.com",
+                "incisozluk.cc"
+            ]
+        },
         "Instagram": {
             "domains": [
                 "instagram.com"
+            ]
+        },
+         "Instela": {
+            "domains": [
+                "instela.com"
             ]
         },
         "Last.fm": {
@@ -3928,7 +4301,8 @@ const defaultRules = `
         },
         "Odnoklassniki": {
             "domains": [
-                "odnoklassniki.ru"
+                "odnoklassniki.ru",
+                "ok.ru"
             ]
         },
         "Orkut": {
@@ -3951,9 +4325,19 @@ const defaultRules = `
                 "plaxo.com"
             ]
         },
+        "Pocket": {
+             "domains": [
+                "getpocket.com"
+            ]
+        },
         "Polyvore": {
             "domains": [
                 "polyvore.com"
+            ]
+        },
+        "Quora": {
+             "domains": [
+                "quora.com"
             ]
         },
         "Qzone": {
@@ -4030,7 +4414,8 @@ const defaultRules = `
         "Tumblr": {
             "domains": [
                 "tumblr.com",
-                "umblr.com"
+                "umblr.com",
+                "t.umblr.com"
             ]
         },
         "Twitter": {
@@ -4041,7 +4426,8 @@ const defaultRules = `
         },
         "Twitch":{
           "domains": [
-                "twitch.tv"
+                "twitch.tv",
+                "twitch.com"
           ]
         },
         "Viadeo": {
@@ -4106,9 +4492,31 @@ const defaultRules = `
                 "myyearbook.com"
             ]
         },
+        "ITU Sozluk": {
+            "domains": [
+                "itusozluk.com"
+            ]
+        },
+        "Eksi Sozluk": {
+            "domains": [
+                "Sozluk.com",
+                "sourtimes.org"
+            ]
+        },
+        "Uludag Sozluk": {
+            "domains": [
+                "uludagsozluk.com",
+                "ulusozluk.com"
+            ]
+        },
         "vKruguDruzei.ru": {
             "domains": [
                 "vkrugudruzei.ru"
+            ]
+        },
+        "Whirlpool": {
+            "domains": [
+                "forums.whirlpool.net.au"
             ]
         },
         "Youtube": {
