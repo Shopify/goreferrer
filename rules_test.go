@@ -57,7 +57,7 @@ func TestMalformedUrlIsInvalid(t *testing.T) {
 func TestMatchOnAllButQueryString(t *testing.T) {
 	rules := RuleSet{
 		DomainRules: map[string]DomainRule{
-			"www.zambo.com/search": DomainRule{Type: Search},
+			"www.zambo.com/search": {Type: Search},
 		},
 	}
 	assert.Equal(t, Search, rules.Parse("http://www.zambo.com/search?q=hello!").Type)
@@ -66,7 +66,7 @@ func TestMatchOnAllButQueryString(t *testing.T) {
 func TestMatchOnDomainTldAndPath(t *testing.T) {
 	rules := RuleSet{
 		DomainRules: map[string]DomainRule{
-			"zambo.com/search": DomainRule{Type: Search},
+			"zambo.com/search": {Type: Search},
 		},
 	}
 	assert.Equal(t, Search, rules.Parse("http://www.zambo.com/search?q=hello!").Type)
@@ -75,7 +75,7 @@ func TestMatchOnDomainTldAndPath(t *testing.T) {
 func TestMatchOnSubdomainDomainAndTld(t *testing.T) {
 	rules := RuleSet{
 		DomainRules: map[string]DomainRule{
-			"www.zambo.com": DomainRule{Type: Search},
+			"www.zambo.com": {Type: Search},
 		},
 	}
 	assert.Equal(t, Search, rules.Parse("http://www.zambo.com/search?q=hello!").Type)
@@ -84,7 +84,7 @@ func TestMatchOnSubdomainDomainAndTld(t *testing.T) {
 func TestMatchOnDomainAndTld(t *testing.T) {
 	rules := RuleSet{
 		DomainRules: map[string]DomainRule{
-			"zambo.com": DomainRule{Type: Search},
+			"zambo.com": {Type: Search},
 		},
 	}
 	assert.Equal(t, Search, rules.Parse("http://www.zambo.com/search?q=hello!").Type)
